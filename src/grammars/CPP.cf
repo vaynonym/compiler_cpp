@@ -1,5 +1,10 @@
 PDefs . Program ::= [Def];
 
+-- To execute the literal-* tests, use these two lines
+-- and comment out the first line instead.
+--PDefs . Program ::= [Exp];
+--separator Exp "";
+
 -- Remove this and insert defintion productions here.
 DExample . Def ::= "exampledef" ;
 
@@ -9,6 +14,16 @@ SExp .  Stm ::= Exp ";" ;
 -- Remove this and insert expression productions here.
 EExamle . Exp ::= "exampleexp" ;
 
+
+-- Literals
+-- TODO: Still need to handle precedence here once the other
+--       expressions are done.
+LInt    . Exp ::= Integer ;
+LFloat  . Exp ::= Double ;
+LChar   . Exp ::= Char ;
+LString . Exp ::= String ;
+LTrue   . Exp ::= "true" ;
+LFalse  . Exp ::= "false" ;
 
 -- Separators and terminators here
 terminator Def "";
