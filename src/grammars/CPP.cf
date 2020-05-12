@@ -2,14 +2,26 @@ PDefs . Program ::= [Def];
 
 -- To execute the literal-* tests, use these two lines
 -- and comment out the first line instead.
---PDefs . Program ::= [Exp];
---separator Exp "";
+--PDefs . Program ::= [Exp] ;
+--separator Exp "" ;
 
 -- Remove this and insert defintion productions here.
 DExample . Def ::= "exampledef" ;
 
--- Insert statement productions here.
-SExp .  Stm ::= Exp ";" ;
+-- Statements
+SExp     . Stm ::= Exp ";" ;
+SReturn  . Stm ::= "return" Exp ";" ;
+-- TODO: Variable declarations require types and identifiers
+-- SVarDecl . Stm ::= 
+SWhile   . Stm ::= "while" "(" Exp ")" Stm ;
+SDoWhile . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
+-- TODO: for requires a variable declaration
+-- SFor     . Stm ::= 
+SIf      . Stm ::= "if" "(" Exp ")" Stm ;
+SIfElse  . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
+SBlock   . Stm ::= "{" [Stm] "}" ;
+-- TODO: typedef requires types and identifiers
+-- STypeDef . Stm ::= 
 
 -- Remove this and insert expression productions here.
 EExamle . Exp ::= "exampleexp" ;
@@ -27,3 +39,4 @@ LFalse  . Exp ::= "false" ;
 
 -- Separators and terminators here
 terminator Def "";
+separator Stm "";
