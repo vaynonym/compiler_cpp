@@ -1,3 +1,14 @@
 PDefs . Program ::= [Def];
 
+-- Remove this and insert defintion productions here.
+DExample . Def ::= "exampledef" ;
+
+-- Insert statement productions here.
+SExp .  Stm ::= Exp ";" ;
+
+-- Remove this and insert expression productions here.
+EExamle . Exp ::= "exampleexp" ;
+
+
+-- Separators and terminators here
 terminator Def "";
