@@ -49,7 +49,8 @@ LFalse  . Exp ::= "false" ;
 -- Separators and terminators here
 terminator Def "";
 separator Stm "";
-
+--identifiers
+token Id (letter (letter|digit|'_')*) ;
 -- comments
 comment "//";
 comment "/*" "*/";
