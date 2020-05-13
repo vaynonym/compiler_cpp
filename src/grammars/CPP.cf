@@ -5,6 +5,15 @@ PDefs . Program ::= [Def];
 --PDefs . Program ::= [Exp] ;
 --separator Exp "" ;
 
+-- Definitions
+-- TODO: function definition needs types, identifiers, argument lists and function bodies
+-- FDef . Def ::= Prefix Type Id Arglist Body;
+-- PInl . Prefix ::= "inline";
+-- PEmp . Prefix ::=;
+
+-- TODO: definition for using qualified constants needs qualified constants
+-- DUsing . Def ::= "using" QConstants;
+
 -- Remove this and insert defintion productions here.
 DExample . Def ::= "exampledef" ;
 
