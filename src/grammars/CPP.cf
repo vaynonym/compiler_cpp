@@ -32,9 +32,60 @@ SBlock   . Stm ::= "{" [Stm] "}" ;
 -- TODO: typedef requires types and identifiers
 -- STypeDef . Stm ::= 
 
--- Remove this and insert expression productions here.
-EExamle . Exp ::= "exampleexp" ;
-
+-- Expressions
+-- atomic expression
+EInt. 	  Exp15	 ::= Integer ;
+EDouble.  Exp15  ::= Double ;
+EString.  Exp15  ::= String ;
+ETrue.	  Exp15  ::= "true" ;
+EFalse.   Exp15  ::= "false" ;
+-- qualified constants 
+EQuaConst.Exp14  ::= const "::" Exp15 ; 
+-- indexing 
+EIndex.   Exp14  ::= Exp15 "[" Integer "]" ;
+-- function call
+ECall.	  Exp14  ::= Exp14 "(" [Exp] ")" ;
+-- structure projection
+EPoint.	  Exp14	 ::= Exp13 "." Exp14 ;
+EArrow.	  Exp14	 ::= Exp13 "->" Exp14 ;
+-- in/decrement
+EPostIncr.Exp14  ::= Exp15 "++" ;
+EPostDecr.Exp14  ::= Exp15 "--" ;
+-- in/decrement, dereference, negation
+EPreIncr. Exp13  ::= "++" Exp14 ;
+EPreDecr. Exp13  ::= "--" Exp14 ;
+EDeref.	  Exp13  ::= "*"  Exp14 ;
+ENeg.	  Exp13  ::= "!"  Exp14 ;
+-- Multiplication, Division,Remainder 
+EMul.     Exp12  ::= Exp12 "*"  Exp13 ;
+EDiv.     Exp12  ::= Exp12 "/"  Exp13 ;
+EMod.	  Exp12  ::= Exp12 "%"  Exp13 ; 
+-- Addition, Subtraction 
+EAdd.     Exp11  ::= Exp11 "+"  Exp12 ;
+ESub.     Exp11  ::= Exp11 "-"  Exp12 ;
+-- left and right shift
+ERShift.  Exp10  ::= Exp9 ">>"  Exp10 ;
+ELShift.  Exp10  ::= Exp9 "<<"  Exp10 ;
+-- Comparison
+ELt.      Exp9   ::= Exp9  "<"  Exp10 ;
+EGt.      Exp9   ::= Exp9  ">"  Exp10 ;
+ELtEq.    Exp9   ::= Exp9  "<=" Exp10 ;
+EGtEq.    Exp9   ::= Exp9  ">=" Exp10 ;
+-- (in)equality 
+EEq.      Exp8   ::= Exp8  "==" Exp9 ;
+ENEq.     Exp8   ::= Exp8  "!=" Exp9 ;
+-- Conjunction
+EAnd.     Exp4   ::= Exp4  "&&" Exp5 ;
+-- Disjunction 
+EOr.      Exp3   ::= Exp3  "||" Exp4 ;
+-- Assignment 
+EAssign.  Exp2   ::= Exp3 "="   Exp2 ;
+EAddAss.  Exp2   ::= Exp3 "+="  Exp2 ;
+ESubAss.  Exp2   ::= Exp3 "-="  Exp2 ;
+-- Conditional 
+ECond.	  Exp2   ::= Exp3 "?" Exp2 ":" Exp2 ;
+--Exception 
+EExcep.	  Exp1 	 ::= throw Expr2 ;
 
 -- Literals
 -- TODO: Still need to handle precedence here once the other
