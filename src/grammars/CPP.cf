@@ -40,3 +40,8 @@ LFalse  . Exp ::= "false" ;
 -- Separators and terminators here
 terminator Def "";
 separator Stm "";
+
+-- comments
+comment "//";
+comment "/*" "*/";
+comment "#";
