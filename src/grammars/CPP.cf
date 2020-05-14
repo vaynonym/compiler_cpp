@@ -111,7 +111,7 @@ TVoid      . Type         ::= "void";
 LInt    . Exp15 ::= Integer ;
 LFloat  . Exp15 ::= Double ;
 LChar   . Exp15 ::= Char ;
-LString . Exp15 ::= String ;
+LString . Exp15 ::= [String] ;
 LTrue   . Exp15 ::= "true" ;
 LFalse  . Exp15 ::= "false" ;
 
@@ -123,6 +123,7 @@ separator nonempty VDVar ",";
 separator VarDecl "";
 separator Type ",";
 separator Exp ",";
+separator nonempty String "";
 
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
