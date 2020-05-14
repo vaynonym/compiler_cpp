@@ -55,12 +55,7 @@ VDVar            . VDVar ::= Id ;
 VDVar            . VDVar ::= Id "=" Exp ;
 
 -- Expressions
--- atomic expression
-EInt      . Exp15 ::= Integer ;
-EDouble   . Exp15 ::= Double ;
-EString   . Exp15 ::= String ;
-ETrue     .	Exp15 ::= "true" ;
-EFalse    . Exp15 ::= "false" ;
+
 -- qualified constants 
 EQuaConst . Exp14 ::= QConstant ;
 -- indexing 
@@ -108,7 +103,7 @@ ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
 ECond	  . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
 --Exception 
 EExcep	  . Exp1  ::= "throw" Expr2 ;
-
+coercions Exp 15 ; 
 -- Types
 TPre       .  PrefixedType ::= "const" Type ;
 TNoPre     .  PrefixedType ::= Type ;
@@ -124,12 +119,12 @@ TVoid      .  Type         ::= "void";
 -- Literals
 -- TODO: Still need to handle precedence here once the other
 --       expressions are done.
-LInt    . Exp ::= Integer ;
-LFloat  . Exp ::= Double ;
-LChar   . Exp ::= Char ;
-LString . Exp ::= String ;
-LTrue   . Exp ::= "true" ;
-LFalse  . Exp ::= "false" ;
+LInt    . Exp15 ::= Integer ;
+LFloat  . Exp15 ::= Double ;
+LChar   . Exp15 ::= Char ;
+LString . Exp15 ::= String ;
+LTrue   . Exp15 ::= "true" ;
+LFalse  . Exp15 ::= "false" ;
 
 -- Separators and terminators here
 terminator Def "";
