@@ -47,7 +47,7 @@ VDVarInit        . VDVar           ::= Id "=" Exp ;
 -- qualified constants 
 EQuaConst . Exp14 ::= QConstant ;
 -- indexing 
-EIndex    . Exp14 ::= Exp15 "[" Integer "]" ;
+EIndex    . Exp14 ::= Exp14 "[" Exp "]" ;
 -- function call
 ECall     . Exp14 ::= Exp14 "(" [Exp] ")" ;
 -- structure projection
