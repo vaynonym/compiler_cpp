@@ -21,7 +21,7 @@ FArgEmp . Argdef ::= ;
 
 
 -- TODO: definition for using qualified constants needs qualified constants
--- DUsing . Def ::= "using" QConstants;
+-- DUsing . Def ::= "using" QConstant;
 
 -- Remove this and insert defintion productions here.
 DExample . Def ::= "exampledef" ;
@@ -51,7 +51,7 @@ EString   . Exp15 ::= String ;
 ETrue     .	Exp15 ::= "true" ;
 EFalse    . Exp15 ::= "false" ;
 -- qualified constants 
-EQuaConst . Exp14 ::= const "::" Exp15 ; 
+EQuaConst . Exp14 ::= QConstant ;
 -- indexing 
 EIndex    . Exp14 ::= Exp15 "[" Integer "]" ;
 -- function call
