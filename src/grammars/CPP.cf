@@ -111,7 +111,7 @@ LFalse  . Exp ::= "false" ;
 -- Separators and terminators here
 terminator Def "";
 separator Stm "";
-seperator Arg ",";
+separator Arg ",";
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
 -- comments
