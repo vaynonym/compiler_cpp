@@ -118,7 +118,7 @@ terminator Def "";
 separator Stm "";
 separator Arg ",";
 separator nonempty VDVar ",";
-separater VarDecl "";
+separator VarDecl "";
 
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
