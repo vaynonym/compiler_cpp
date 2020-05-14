@@ -11,11 +11,11 @@ DFun . Def ::= Fun;
 DTLS . Def ::= TLStm;
 
 -- Functions
-FDec . Fun ::= Prefix Type Id "(" [Arg] ")" ";";
-FDef . Fun ::= Prefix Type Id "(" [Arg] ")" "{" [Stm] "}";
-PInl . Prefix ::= "inline";
-PEmp . Prefix ::= ;
-FArg . Arg ::= PrefixedType Id Argdef;
+FDec . Fun       ::= Prefix Type Id "(" [Arg] ")" ";";
+FDef . Fun       ::= Prefix Type Id "(" [Arg] ")" "{" [Stm] "}";
+PInl . Prefix    ::= "inline";
+PEmp . Prefix    ::= ;
+FArg . Arg       ::= PrefixedType Id Argdef;
 FArgdef . Argdef ::= "=" Exp;
 FArgEmp . Argdef ::= ;
 
