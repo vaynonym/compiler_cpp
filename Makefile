@@ -1,14 +1,21 @@
-all: grammar
+all: parser
 
-grammar: src/grammars/CPP.cf
+parser: src/grammars/CPP.cf clean-debug
 	bnfc -m -o bin/parser/ src/grammars/CPP.cf
-	$(MAKE) -C bin/parser/
+	$(MAKE) -C bin/parser/ && cp bin/parser/TestCPP bin/
 
-test: grammar
-	bin/parser/TestCPP tests/1-hello.cc && bin/parser/TestCPP tests/2-greet.cc && bin/parser/TestCPP tests/3-med.cc && bin/parser/TestCPP tests/4-grade.cc && bin/parser/TestCPP tests/5-palin.cc && bin/parser/TestCPP tests/6-grammar.cc
+debug: src/grammars/CPP.cf
+	bnfc -m -o debug/parser/ src/grammars/CPP.cf
+	sed -i -e 's/happy --ghc/happy -da --ghc/g' debug/parser/Makefile
+	$(MAKE) -C debug/parser/ && cp debug/parser/TestCPP debug/
 
-test-literals: grammar
-	bin/parser/TestCPP tests/literals-int.txt && bin/parser/TestCPP tests/literals-float.txt && bin/parser/TestCPP tests/literals-char.txt && bin/parser/TestCPP tests/literals-string.txt && bin/parser/TestCPP tests/literals-bool.txt
+test: parser
+	./run-test
 
-clean:
+clean: clean-bin clean-debug
+
+clean-bin:
 	rm -rf bin/
+
+clean-debug:
+	rm -rf debug/

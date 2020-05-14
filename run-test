@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+
+if [[ -d "debug" ]]; then
+  echo "Using parser debug/parser/"
+  PARSER="debug/TestCPP"
+else
+  echo "Using parser in bin/parser/"
+  PARSER="bin/TestCPP"
+fi
+
+FILES=$@
+if [[ $# -eq 0 ]]; then
+  FILES=`ls tests/`
+fi
+
+for testCase in $FILES
+do
+  echo "======== TEST CASE $testCase ========"
+  $PARSER "tests/$testCase"
+done
