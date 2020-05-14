@@ -11,13 +11,13 @@ DFun . Def ::= Fun;
 DTLS . Def ::= TLStm;
 
 -- Functions
-FDec    . Fun       ::= Prefix Type Id "(" [Arg] ")" ";";
-FDef    . Fun       ::= Prefix Type Id "(" [Arg] ")" "{" [Stm] "}";
-PInl    . Prefix    ::= "inline";
-PEmp    . Prefix    ::= ;
-FArg    . Arg       ::= PrefixedType Id Argdef;
-FArgdef . Argdef    ::= "=" Exp;
-FArgEmp . Argdef    ::= ;
+FSign       . Fun       ::= Type Id "(" [Arg] ")" FRest ;
+FSignPrefix . Fun       ::= "inline" Type Id "(" [Arg] ")" FRest ;
+FDef        . FRest     ::=  "{" [Stm] "}";
+FDecl       . FRest     ::= ";" ;
+FArg        . Arg       ::= PrefixedType Id Argdef ;
+FArgdef     . Argdef    ::= "=" Exp ;
+FArgEmp     . Argdef    ::= ;
 
 
 -- TODO: definition for using qualified constants needs qualified constants
