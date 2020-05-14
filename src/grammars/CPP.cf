@@ -6,13 +6,14 @@ DTLS   . Def ::= TLStm;
 DUsing . Def ::= "using" QConstant;
 
 -- Functions
-FSign       . Fun       ::= Type Id "(" [Arg] ")" FRest ;
-FSignPrefix . Fun       ::= "inline" Type Id "(" [Arg] ")" FRest ;
-FDef        . FRest     ::=  "{" [Stm] "}";
-FDecl       . FRest     ::= ";" ;
-FArg        . Arg       ::= PrefixedType Id Argdef ;
-FArgdef     . Argdef    ::= "=" Exp ;
-FArgEmp     . Argdef    ::= ;
+FDec    . Fun       ::= Type Id "(" [Arg] ")" FRest ;
+FDecInline . Fun    ::= "inline" Type Id "(" [Arg] ")" FRest ;
+FRestB   . FRest    ::= "{" [Stm] "}";
+FRestE   . FRest    ::= ";" ;
+FArg    . Arg       ::= Type Id Argdef;
+FArg    . Arg       ::= "const" Type Id Argdef;
+FArgdef . Argdef    ::= "=" Exp;
+FArgEmp . Argdef    ::= ;
 
 -- Qualified Constants and templates
 QCDef . QConstant ::= Id "::" QConstant;
@@ -35,11 +36,12 @@ SVarDeclTL . TLStm ::= VarDecl ;
 STypeDef   . TLStm ::= "typedef" Type Id ";" ;
 SStruct    . TLStm ::= "struct" Id "{" [VarDecl] "}" ";" ;
 
-SVarDecl         . VarDecl         ::= VDPrefConstInit PrefixedType [VDVar] ";" ;
-VDPrefConstInitE . VDPrefConstInit ::= ;
-VDPrefConstInit  . VDPrefConstInit ::= "constinit" ;
-VDVar            . VDVar           ::= Id ;
-VDVarValue       . VDVar           ::= Id "=" Exp ;
+SVarDecl         . VarDecl         ::= Type [VDVar] ";" ;
+SVarDecl         . VarDecl         ::= "const" Type [VDVar] ";" ;
+SVarDeclCInit    . VarDecl         ::= "constinit" Type [VDVar] ";" ;
+SVarDeclCInit    . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
+VDVarNoInit      . VDVar           ::= Id ;
+VDVarInit        . VDVar           ::= Id "=" Exp ;
 
 -- Expressions
 -- qualified constants 
@@ -92,8 +94,8 @@ EExcep    . Exp1  ::= "throw" Exp2 ;
 coercions Exp 15 ;
 
 -- Types
-TPre       . PrefixedType ::= "const" Type ;
-TNoPre     . PrefixedType ::= Type ;
+--TPre       . PrefixedType ::= "const" Type ;
+--TNoPre     . PrefixedType ::= Type ;
 TAddr      . Type         ::= Type "&" ;
 TQCon      . Type         ::= QConstant ;
 TInt       . Type         ::= "int" ;
