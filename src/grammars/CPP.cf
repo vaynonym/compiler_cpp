@@ -27,21 +27,26 @@ FArgEmp . Argdef ::= ;
 DExample . Def ::= "exampledef" ;
 
 -- Statements
-STopLevel. Stm ::= TLStm ;
-SExp     . Stm ::= Exp ";" ;
-SReturn  . Stm ::= "return" Exp ";" ;
--- TODO: Variable declarations require types and identifiers
--- SVarDecl . TLStm ::= 
-SWhile   . Stm ::= "while" "(" Exp ")" Stm ;
-SDoWhile . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
--- TODO: for requires a variable declaration
--- SFor     . Stm ::= 
-SIf      . Stm ::= "if" "(" Exp ")" Stm ;
-SIfElse  . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
-SBlock   . Stm ::= "{" [Stm] "}" ;
--- TODO: typedef and structures require types and identifiers
--- STypeDef . TLStm ::= 
-SStruct . TLStm ::= "struct" ;
+STopLevel  . Stm ::= TLStm ;
+SEmpty     . Stm ::= ";" ;
+SExp       . Stm ::= Exp ";" ;
+SReturn    . Stm ::= "return" Exp ";" ;
+SWhile     . Stm ::= "while" "(" Exp ")" Stm ;
+SDoWhile   . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
+SFor       . Stm ::= "for" "(" SVarDecl Exp ";" Exp ")" Stm ;
+SIf        . Stm ::= "if" "(" Exp ")" Stm ;
+SIfElse    . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
+SBlock     . Stm ::= "{" [Stm] "}" ;
+
+SVarDeclTL . TLStm ::= VarDecl ;
+STypeDef   . TLStm ::= "typedef" Type Id ";" ;
+SStruct    . TLStm ::= "struct" Id "{" [VarDecl] "}" ";" ;
+
+SVarDecl         . VarDecl ::= VDPrefConstInit PrefixedType [VDVar] ";" ;
+VDPrefConstInitE . VDPrefConstInit ::= ;
+VDPrefConstInit  . VDPrefConstInit ::= "constinit" ;
+VDVar            . VDVar ::= Id ;
+VDVar            . VDVar ::= Id "=" Exp ;
 
 -- Expressions
 -- atomic expression
@@ -112,6 +117,9 @@ LFalse  . Exp ::= "false" ;
 terminator Def "";
 separator Stm "";
 separator Arg ",";
+separator nonempty VDVar ",";
+separater VarDecl "";
+
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
 -- comments
