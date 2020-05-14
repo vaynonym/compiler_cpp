@@ -3,7 +3,7 @@ PDefs . Program ::= [Def];
 -- Definitions
 DFun   . Def ::= Fun;
 DTLS   . Def ::= TLStm;
-DUsing . Def ::= "using" QConstant;
+DUsing . Def ::= "using" QConstant ";";
 
 -- Functions
 FDec    . Fun       ::= Type Id "(" [Arg] ")" FRest ;
