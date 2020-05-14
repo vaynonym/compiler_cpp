@@ -15,7 +15,7 @@ FDec . Fun ::= Prefix Type Id "(" [Arg] ")" ";";
 FDef . Fun ::= Prefix Type Id "(" [Arg] ")" "{" [Stm] "}";
 PInl . Prefix ::= "inline";
 PEmp . Prefix ::= ;
-FArg . Arg ::= Type Id Argdef;
+FArg . Arg ::= PrefixedType Id Argdef;
 FArgdef . Argdef ::= "=" Exp;
 FArgEmp . Argdef ::= ;
 
@@ -102,6 +102,18 @@ ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
 ECond	  . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
 --Exception 
 EExcep	  . Exp1  ::= "throw" Expr2 ;
+
+-- Types
+TPre       .  PrefixedType ::= "const" Type ;
+TNoPre     .  PrefixedType ::= Type ;
+TAddr      .  Type         ::= Type "&" ;
+TQCon      .  Type         ::= QConstant ;
+TInt       .  Type         ::= "int" ;
+TBool      .  Type         ::= "bool" ;
+TChar      .  Type         ::= "char" ;
+TDouble    .  Type         ::= "double";
+TVoid      .  Type         ::= "void";
+
 
 -- Literals
 -- TODO: Still need to handle precedence here once the other
