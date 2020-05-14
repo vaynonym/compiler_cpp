@@ -27,10 +27,11 @@ FArgEmp . Argdef ::= ;
 DExample . Def ::= "exampledef" ;
 
 -- Statements
+STopLevel. Stm ::= TLStm ;
 SExp     . Stm ::= Exp ";" ;
 SReturn  . Stm ::= "return" Exp ";" ;
 -- TODO: Variable declarations require types and identifiers
--- SVarDecl . Stm ::= 
+-- SVarDecl . TLStm ::= 
 SWhile   . Stm ::= "while" "(" Exp ")" Stm ;
 SDoWhile . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
 -- TODO: for requires a variable declaration
@@ -38,8 +39,9 @@ SDoWhile . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
 SIf      . Stm ::= "if" "(" Exp ")" Stm ;
 SIfElse  . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 SBlock   . Stm ::= "{" [Stm] "}" ;
--- TODO: typedef requires types and identifiers
--- STypeDef . Stm ::= 
+-- TODO: typedef and structures require types and identifiers
+-- STypeDef . TLStm ::= 
+SStruct . TLStm ::= "struct" ;
 
 -- Expressions
 -- atomic expression
