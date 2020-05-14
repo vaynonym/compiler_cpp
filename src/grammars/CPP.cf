@@ -1,14 +1,9 @@
 PDefs . Program ::= [Def];
 
--- To execute the literal-* tests, use these two lines
--- and comment out the first line instead.
---PDefs . Program ::= [Exp] ;
---separator Exp "" ;
-
 -- Definitions
--- TODO: function definition needs types, identifiers, argument lists and function bodies
-DFun . Def ::= Fun;
-DTLS . Def ::= TLStm;
+DFun   . Def ::= Fun;
+DTLS   . Def ::= TLStm;
+DUsing . Def ::= "using" QConstant;
 
 -- Functions
 FSign       . Fun       ::= Type Id "(" [Arg] ")" FRest ;
@@ -19,18 +14,10 @@ FArg        . Arg       ::= PrefixedType Id Argdef ;
 FArgdef     . Argdef    ::= "=" Exp ;
 FArgEmp     . Argdef    ::= ;
 
-
--- TODO: definition for using qualified constants needs qualified constants
-DUsing . Def ::= "using" QConstant;
-
 -- Qualified Constants and templates
 QCDef . QConstant ::= Id "::" QConstant;
-QCId . QConstant ::= Id;
+QCId  . QConstant ::= Id;
 QCTem . QCOnstant ::= Id "<" [Type] ">";
-
-
--- Remove this and insert defintion productions here.
-DExample . Def ::= "exampledef" ;
 
 -- Statements
 STopLevel  . Stm ::= TLStm ;
@@ -39,7 +26,7 @@ SExp       . Stm ::= Exp ";" ;
 SReturn    . Stm ::= "return" Exp ";" ;
 SWhile     . Stm ::= "while" "(" Exp ")" Stm ;
 SDoWhile   . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
-SFor       . Stm ::= "for" "(" SVarDecl Exp ";" Exp ")" Stm ;
+SFor       . Stm ::= "for" "(" VarDecl Exp ";" Exp ")" Stm ;
 SIf        . Stm ::= "if" "(" Exp ")" Stm ;
 SIfElse    . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 SBlock     . Stm ::= "{" [Stm] "}" ;
@@ -48,14 +35,13 @@ SVarDeclTL . TLStm ::= VarDecl ;
 STypeDef   . TLStm ::= "typedef" Type Id ";" ;
 SStruct    . TLStm ::= "struct" Id "{" [VarDecl] "}" ";" ;
 
-SVarDecl         . VarDecl ::= VDPrefConstInit PrefixedType [VDVar] ";" ;
+SVarDecl         . VarDecl         ::= VDPrefConstInit PrefixedType [VDVar] ";" ;
 VDPrefConstInitE . VDPrefConstInit ::= ;
 VDPrefConstInit  . VDPrefConstInit ::= "constinit" ;
-VDVar            . VDVar ::= Id ;
-VDVar            . VDVar ::= Id "=" Exp ;
+VDVar            . VDVar           ::= Id ;
+VDVarValue       . VDVar           ::= Id "=" Exp ;
 
 -- Expressions
-
 -- qualified constants 
 EQuaConst . Exp14 ::= QConstant ;
 -- indexing 
@@ -71,12 +57,12 @@ EPostDecr . Exp14 ::= Exp15 "--" ;
 -- in/decrement, dereference, negation
 EPreIncr  . Exp13 ::= "++" Exp14 ;
 EPreDecr  . Exp13 ::= "--" Exp14 ;
-EDeref 	  . Exp13 ::= "*"  Exp14 ;
-ENeg	  . Exp13 ::= "!"  Exp14 ;
+EDeref    . Exp13 ::= "*"  Exp14 ;
+ENeg      . Exp13 ::= "!"  Exp14 ;
 -- Multiplication, Division,Remainder 
 EMul      . Exp12 ::= Exp12 "*"  Exp13 ;
 EDiv      . Exp12 ::= Exp12 "/"  Exp13 ;
-EMod	  . Exp12 ::= Exp12 "%"  Exp13 ; 
+EMod      . Exp12 ::= Exp12 "%"  Exp13 ; 
 -- Addition, Subtraction 
 EAdd      . Exp11 ::= Exp11 "+"  Exp12 ;
 ESub      . Exp11 ::= Exp11 "-"  Exp12 ;
@@ -100,20 +86,21 @@ EAssign   . Exp2  ::= Exp3 "="   Exp2 ;
 EAddAss   . Exp2  ::= Exp3 "+="  Exp2 ;
 ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
 -- Conditional 
-ECond	  . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
+ECond     . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
 --Exception 
-EExcep	  . Exp1  ::= "throw" Expr2 ;
-coercions Exp 15 ; 
+EExcep    . Exp1  ::= "throw" Exp2 ;
+coercions Exp 15 ;
+
 -- Types
-TPre       .  PrefixedType ::= "const" Type ;
-TNoPre     .  PrefixedType ::= Type ;
-TAddr      .  Type         ::= Type "&" ;
-TQCon      .  Type         ::= QConstant ;
-TInt       .  Type         ::= "int" ;
-TBool      .  Type         ::= "bool" ;
-TChar      .  Type         ::= "char" ;
-TDouble    .  Type         ::= "double";
-TVoid      .  Type         ::= "void";
+TPre       . PrefixedType ::= "const" Type ;
+TNoPre     . PrefixedType ::= Type ;
+TAddr      . Type         ::= Type "&" ;
+TQCon      . Type         ::= QConstant ;
+TInt       . Type         ::= "int" ;
+TBool      . Type         ::= "bool" ;
+TChar      . Type         ::= "char" ;
+TDouble    . Type         ::= "double";
+TVoid      . Type         ::= "void";
 
 
 -- Literals
@@ -133,6 +120,7 @@ separator Arg ",";
 separator nonempty VDVar ",";
 separator VarDecl "";
 separator Type ",";
+separator Exp ",";
 
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
