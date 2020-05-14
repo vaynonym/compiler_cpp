@@ -7,9 +7,18 @@ PDefs . Program ::= [Def];
 
 -- Definitions
 -- TODO: function definition needs types, identifiers, argument lists and function bodies
--- FDef . Def ::= Prefix Type Id Arglist Body;
--- PInl . Prefix ::= "inline";
--- PEmp . Prefix ::=;
+DFun . Def ::= Fun;
+DTLS . Def ::= TLStm;
+
+-- Functions
+FDec . Fun ::= Prefix Type Id "(" [Arg] ")" ";";
+FDef . Fun ::= Prefix Type Id "(" [Arg] ")" "{" [Stm] "}";
+PInl . Prefix ::= "inline";
+PEmp . Prefix ::= ;
+FArg . Arg ::= Type Id Argdef;
+FArgdef . Argdef ::= "=" Exp;
+FArgEmp . Argdef ::= ;
+
 
 -- TODO: definition for using qualified constants needs qualified constants
 -- DUsing . Def ::= "using" QConstants;
@@ -100,6 +109,7 @@ LFalse  . Exp ::= "false" ;
 -- Separators and terminators here
 terminator Def "";
 separator Stm "";
+seperator Arg ",";
 --identifiers
 token Id (letter (letter|digit|'_')*) ;
 -- comments
