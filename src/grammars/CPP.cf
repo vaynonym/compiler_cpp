@@ -6,14 +6,17 @@ DTLS   . Def ::= TLStm;
 DUsing . Def ::= "using" QConstant ";";
 
 -- Functions
-FDec    . Fun       ::= Type Id "(" [Arg] ")" FRest ;
-FDecInline . Fun    ::= "inline" Type Id "(" [Arg] ")" FRest ;
-FRestB   . FRest    ::= "{" [Stm] "}";
-FRestE   . FRest    ::= ";" ;
-FArg    . Arg       ::= Type Id Argdef;
-FArg    . Arg       ::= "const" Type Id Argdef;
-FArgdef . Argdef    ::= "=" Exp;
-FArgEmp . Argdef    ::= ;
+FDec       . Fun       ::= Type Id "(" [Arg] ")" FRest ;
+FDecInline . Fun       ::= "inline" Type Id "(" [Arg] ")" FRest ;
+FRestB     . FRest     ::= "{" [Stm] "}";
+FRestE     . FRest     ::= ";" ;
+FArg       . Arg       ::= Type ArgRest;
+FArgConst  . Arg       ::= "const" Type ArgRest;
+AREmpty    . ArgRest   ::= ;
+ARId       . ArgRest   ::= Id ArgDef;
+FArgDef    . ArgDef    ::= "=" Exp;
+FArgDefEmp . ArgDef    ::= ;
+
 
 -- Qualified Constants and templates
 QCDef . QConstant ::= Id "::" QConstant;
