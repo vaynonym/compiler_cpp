@@ -71,6 +71,8 @@ ESub      . Exp11 ::= Exp11 "-"  Exp12 ;
 -- left and right shift
 ERShift   . Exp10 ::= Exp9 ">>"  Exp10 ;
 ELShift   . Exp10 ::= Exp9 "<<"  Exp10 ;
+--three-way comparison
+ETWComp   . Exp9  ::= Exp9 "<=>" Exp10 ;
 -- Comparison
 ELt       . Exp9  ::= Exp9  "<"  Exp10 ;
 EGt       . Exp9  ::= Exp9  ">"  Exp10 ;
