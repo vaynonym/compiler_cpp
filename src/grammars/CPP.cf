@@ -85,8 +85,8 @@ EMod      . Exp12 ::= Exp12 "%"  Exp13 ;
 EAdd      . Exp11 ::= Exp11 "+"  Exp12 ;
 ESub      . Exp11 ::= Exp11 "-"  Exp12 ;
 -- left and right shift
-ERShift   . Exp10 ::= Exp10 ">>"  Exp9 ;
-ELShift   . Exp10 ::= Exp10 "<<"  Exp9 ;
+ERShift   . Exp10 ::= Exp10 ">>"  Exp11 ;
+ELShift   . Exp10 ::= Exp10 "<<"  Exp11 ;
 --three-way comparison
 ETWComp   . Exp9  ::= Exp9 "<=>" Exp10 ;
 -- Comparison
