@@ -46,17 +46,14 @@ SVarDeclCInit    . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
 VDVarNoInit      . VDVar           ::= Id ;
 VDVarInit        . VDVar           ::= Id "=" Exp ;
 
+-- Expressions
 -- Literals
-
---       expressions are done.
 LInt      . Exp15 ::= Integer ;
 LFloat    . Exp15 ::= Double ;
 LChar     . Exp15 ::= Char ;
 LString   . Exp15 ::= [String] ;
 LTrue     . Exp15 ::= "true" ;
 LFalse    . Exp15 ::= "false" ;
-
--- Expressions
 -- qualified constants 
 EQuaConst . Exp15 ::= QConstant ;
 -- indexing 
