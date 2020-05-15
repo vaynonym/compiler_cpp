@@ -46,6 +46,16 @@ SVarDeclCInit    . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
 VDVarNoInit      . VDVar           ::= Id ;
 VDVarInit        . VDVar           ::= Id "=" Exp ;
 
+-- Literals
+
+--       expressions are done.
+LInt      . Exp15 ::= Integer ;
+LFloat    . Exp15 ::= Double ;
+LChar     . Exp15 ::= Char ;
+LString   . Exp15 ::= [String] ;
+LTrue     . Exp15 ::= "true" ;
+LFalse    . Exp15 ::= "false" ;
+
 -- Expressions
 -- qualified constants 
 EQuaConst . Exp14 ::= QConstant ;
@@ -54,8 +64,8 @@ EIndex    . Exp14 ::= Exp14 "[" Exp "]" ;
 -- function call
 ECall     . Exp14 ::= Exp14 "(" [Exp] ")" ;
 -- structure projection
-EPoint    . Exp14 ::= Exp13 "." Exp14 ;
-EArrow    . Exp14 ::= Exp13 "->" Exp14 ;
+EPoint    . Exp14 ::= Exp14 "." Exp15 ;
+EArrow    . Exp14 ::= Exp14 "->" Exp15 ;
 -- in/decrement
 EPostIncr . Exp14 ::= Exp15 "++" ;
 EPostDecr . Exp14 ::= Exp15 "--" ;
@@ -75,8 +85,8 @@ EMod      . Exp12 ::= Exp12 "%"  Exp13 ;
 EAdd      . Exp11 ::= Exp11 "+"  Exp12 ;
 ESub      . Exp11 ::= Exp11 "-"  Exp12 ;
 -- left and right shift
-ERShift   . Exp10 ::= Exp9 ">>"  Exp10 ;
-ELShift   . Exp10 ::= Exp9 "<<"  Exp10 ;
+ERShift   . Exp10 ::= Exp10 ">>"  Exp9 ;
+ELShift   . Exp10 ::= Exp10 "<<"  Exp9 ;
 --three-way comparison
 ETWComp   . Exp9  ::= Exp9 "<=>" Exp10 ;
 -- Comparison
@@ -113,15 +123,7 @@ TDouble    . Type         ::= "double";
 TVoid      . Type         ::= "void";
 
 
--- Literals
--- TODO: Still need to handle precedence here once the other
---       expressions are done.
-LInt    . Exp15 ::= Integer ;
-LFloat  . Exp15 ::= Double ;
-LChar   . Exp15 ::= Char ;
-LString . Exp15 ::= [String] ;
-LTrue   . Exp15 ::= "true" ;
-LFalse  . Exp15 ::= "false" ;
+
 
 -- Separators and terminators here
 terminator Def "";
