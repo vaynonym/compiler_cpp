@@ -58,7 +58,7 @@ LFalse    . Exp15 ::= "false" ;
 
 -- Expressions
 -- qualified constants 
-EQuaConst . Exp14 ::= QConstant ;
+EQuaConst . Exp15 ::= QConstant ;
 -- indexing 
 EIndex    . Exp14 ::= Exp14 "[" Exp "]" ;
 -- function call
