@@ -18,6 +18,29 @@ fi
 
 for testCase in $FILES
 do
-  echo "======== TEST CASE $testCase ========"
-  $PARSER "tests/$testCase"
+  if [ "$testCase" != "reject" ]; then
+    echo "======== TEST CASE $testCase ========"
+    $PARSER "tests/$testCase"
+  fi
 done
+
+if [[ $# -eq 0 ]]; then
+  REJ_FILES=`ls tests/reject/`
+  for testCase in $REJ_FILES
+  do
+    echo "======== REJECT TEST CASE $testCase ========"
+    set +e
+    $PARSER "tests/reject/$testCase"
+    retCode=$?
+    set -e
+
+    if [[ $retCode -eq 0 ]]; then
+      echo "Reject test case passed!"
+      exit 1
+    fi
+  done
+fi
+
+
+echo ""
+echo "All tests passed successfully!"
