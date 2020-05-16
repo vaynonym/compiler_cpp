@@ -67,16 +67,16 @@ ECall     . Exp14 ::= Exp14 "(" [Exp] ")" ;
 EPoint    . Exp14 ::= Exp14 "." Exp15 ;
 EArrow    . Exp14 ::= Exp14 "->" Exp15 ;
 -- in/decrement
-EPostIncr . Exp14 ::= Exp15 "++" ;
-EPostDecr . Exp14 ::= Exp15 "--" ;
+EPostIncr . Exp14 ::= Exp14 "++" ;
+EPostDecr . Exp14 ::= Exp14 "--" ;
 -- in/decrement, dereference, negation
-EPreIncr  . Exp13 ::= "++" Exp14 ;
-EPreDecr  . Exp13 ::= "--" Exp14 ;
-EDeref    . Exp13 ::= "*"  Exp14 ;
-ENeg      . Exp13 ::= "!"  Exp14 ;
+EPreIncr  . Exp13 ::= "++" Exp13 ;
+EPreDecr  . Exp13 ::= "--" Exp13 ;
+EDeref    . Exp13 ::= "*"  Exp13 ;
+ENeg      . Exp13 ::= "!"  Exp13 ;
 -- unary plus/minus
-EUnPlus   . Exp13 ::= "+"  Exp14 ;
-EUnMinus  . Exp13 ::= "-"  Exp14 ;
+EUnPlus   . Exp13 ::= "+"  Exp13 ;
+EUnMinus  . Exp13 ::= "-"  Exp13 ;
 -- Multiplication, Division,Remainder 
 EMul      . Exp12 ::= Exp12 "*"  Exp13 ;
 EDiv      . Exp12 ::= Exp12 "/"  Exp13 ;
@@ -108,7 +108,7 @@ ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
 -- Conditional 
 ECond     . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
 --Exception 
-EExcep    . Exp1  ::= "throw" Exp ;
+EExcep    . Exp1  ::= "throw" Exp1 ;
 coercions Exp 15 ;
 
 
