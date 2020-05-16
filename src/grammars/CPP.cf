@@ -108,8 +108,9 @@ ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
 -- Conditional 
 ECond     . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
 --Exception 
-EExcep    . Exp1  ::= "throw" Exp2 ;
+EExcep    . Exp1  ::= "throw" Exp ;
 coercions Exp 15 ;
+
 
 -- Types
 TAddr      . Type         ::= Type "&" ;
