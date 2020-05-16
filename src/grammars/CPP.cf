@@ -21,7 +21,7 @@ FArgDefEmp . ArgDef    ::= ;
 -- Qualified Constants and templates
 QCDef . QConstant ::= Id "::" QConstant;
 QCId  . QConstant ::= Id;
-QCTem . QCOnstant ::= Id "<" [Type] ">";
+QCTem . QConstant ::= Id "<" [Type] ">";
 
 -- Statements
 STopLevel  . Stm ::= TLStm ;
