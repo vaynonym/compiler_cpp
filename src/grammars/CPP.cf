@@ -44,7 +44,8 @@ SStruct    . TLStm ::= "struct" Id "{" [VarDecl] "}" ";" ;
 SVarDecl         . VarDecl         ::= Type [VDVar] ";" ;
 SVarDecl         . VarDecl         ::= "const" Type [VDVar] ";" ;
 SVarDeclCInit    . VarDecl         ::= "constinit" Type [VDVar] ";" ;
-SVarDeclCInit    . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
+SVarDeclCCInit   . VarDecl         ::= "const" "constinit" Type [VDVar] ";" ;
+SVarDeclCInitC   . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
 VDVarNoInit      . VDVar           ::= Id ;
 VDVarInit        . VDVar           ::= Id "=" Exp ;
 
