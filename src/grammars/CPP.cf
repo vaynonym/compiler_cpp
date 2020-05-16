@@ -27,7 +27,6 @@ TREmpty . TRest        ::= ;
 
 -- Statements
 STopLevel  . Stm ::= TLStm ;
-SEmpty     . Stm ::= ";" ;
 SExp       . Stm ::= Exp ";" ;
 SReturn    . Stm ::= "return" Exp ";" ;
 SWhile     . Stm ::= "while" "(" Exp ")" Stm ;
