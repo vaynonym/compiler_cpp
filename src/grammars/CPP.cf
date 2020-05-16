@@ -111,8 +111,6 @@ EExcep    . Exp1  ::= "throw" Exp2 ;
 coercions Exp 15 ;
 
 -- Types
---TPre       . PrefixedType ::= "const" Type ;
---TNoPre     . PrefixedType ::= Type ;
 TAddr      . Type         ::= Type "&" ;
 TQCon      . Type         ::= QConstant ;
 TInt       . Type         ::= "int" ;
@@ -120,9 +118,6 @@ TBool      . Type         ::= "bool" ;
 TChar      . Type         ::= "char" ;
 TDouble    . Type         ::= "double";
 TVoid      . Type         ::= "void";
-
-
-
 
 -- Separators and terminators here
 terminator Def "";
