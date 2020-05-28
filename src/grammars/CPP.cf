@@ -6,57 +6,56 @@ DTLS   . Def ::= TLStm;
 DUsing . Def ::= "using" QConstant ";";
 
 -- Functions
-FDec       . Fun       ::= Type Id "(" [Arg] ")" FRest ;
-FDecInline . Fun       ::= "inline" Type Id "(" [Arg] ")" FRest ;
-FRestB     . FRest     ::= "{" [Stm] "}";
-FRestE     . FRest     ::= ";" ;
-FArg       . Arg       ::= Type ArgRest;
-FArgConst  . Arg       ::= "const" Type ArgRest;
-AREmpty    . ArgRest   ::= ;
-ARId       . ArgRest   ::= Id ArgDef;
-FArgDef    . ArgDef    ::= "=" Exp;
-FArgDefEmp . ArgDef    ::= ;
+FDec       . Fun     ::= Type Id "(" [Arg] ")" FRest ;
+FDecInline . Fun     ::= "inline" Type Id "(" [Arg] ")" FRest ;
+FRestB     . FRest   ::= "{" [Stm] "}";
+FRestE     . FRest   ::= ";" ;
 
+FArg       . Arg     ::= Type ArgRest;
+FArgConst  . Arg     ::= "const" Type ArgRest;
+AREmpty    . ArgRest ::= ;
+ARId       . ArgRest ::= Id ArgDef;
+FArgDef    . ArgDef  ::= "=" Exp;
+FArgDefEmp . ArgDef  ::= ;
 
 -- Qualified Constants and templates
-QCDef   . QConstant    ::= Id "::" QConstant;
-QCId    . QConstant    ::= Id;
+QCDef   . QConstant  ::= Id "::" QConstant;
+QCId    . QConstant  ::= Id;
 
-TRRec   . TRest        ::= "::" QConstant ;
-TREmpty . TRest        ::= ;
+QCTem   . QConstant  ::= Id "<" TypeList ">" TRest;
+QCTem2  . QConstant  ::= Id "<" TypeList2 TRest;
 
-QCTem   . QConstant    ::= Id "<" TypeList ">" TRest;
-QCTem2   . QConstant    ::= Id "<" TypeList2 TRest;
+TRRec   . TRest      ::= "::" QConstant ;
+TREmpty . TRest      ::= ;
 
-TList. TypeList ::= Type "," TypeList;
-TLType. TypeList ::= Type;
+TList   . TypeList   ::= Type "," TypeList;
+TLType  . TypeList   ::= Type;
 
-TList2. TypeList2 ::= Type "," TypeList2;
-TLEnd. TypeList2 ::= Id "<" [Type] ">>";
-
+TList2  . TypeList2  ::= Type "," TypeList2;
+TLEnd   . TypeList2  ::= Id "<" [Type] ">>";
 
 -- Statements
-STopLevel  . Stm ::= TLStm ;
-SExp       . Stm ::= Exp ";" ;
-SReturn    . Stm ::= "return" Exp ";" ;
-SWhile     . Stm ::= "while" "(" Exp ")" Stm ;
-SDoWhile   . Stm ::= "do" Stm "while" "(" Exp ")" ";" ;
-SFor       . Stm ::= "for" "(" VarDecl Exp ";" Exp ")" Stm ;
-SIf        . Stm ::= "if" "(" Exp ")" Stm ;
-SIfElse    . Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
-SBlock     . Stm ::= "{" [Stm] "}" ;
+STopLevel  . Stm   ::= TLStm ;
+SExp       . Stm   ::= Exp ";" ;
+SReturn    . Stm   ::= "return" Exp ";" ;
+SWhile     . Stm   ::= "while" "(" Exp ")" Stm ;
+SDoWhile   . Stm   ::= "do" Stm "while" "(" Exp ")" ";" ;
+SFor       . Stm   ::= "for" "(" VarDecl Exp ";" Exp ")" Stm ;
+SIf        . Stm   ::= "if" "(" Exp ")" Stm ;
+SIfElse    . Stm   ::= "if" "(" Exp ")" Stm "else" Stm ;
+SBlock     . Stm   ::= "{" [Stm] "}" ;
 
 SVarDeclTL . TLStm ::= VarDecl ;
 STypeDef   . TLStm ::= "typedef" Type Id ";" ;
 SStruct    . TLStm ::= "struct" Id "{" [VarDecl] "}" ";" ;
 
-SVarDecl         . VarDecl         ::= Type [VDVar] ";" ;
-SVarDecl         . VarDecl         ::= "const" Type [VDVar] ";" ;
-SVarDeclCInit    . VarDecl         ::= "constinit" Type [VDVar] ";" ;
-SVarDeclCCInit   . VarDecl         ::= "const" "constinit" Type [VDVar] ";" ;
-SVarDeclCInitC   . VarDecl         ::= "constinit" "const" Type [VDVar] ";" ;
-VDVarNoInit      . VDVar           ::= Id ;
-VDVarInit        . VDVar           ::= Id "=" Exp ;
+SVarDecl       . VarDecl ::= Type [VDVar] ";" ;
+SVarDecl       . VarDecl ::= "const" Type [VDVar] ";" ;
+SVarDeclCInit  . VarDecl ::= "constinit" Type [VDVar] ";" ;
+SVarDeclCCInit . VarDecl ::= "const" "constinit" Type [VDVar] ";" ;
+SVarDeclCInitC . VarDecl ::= "constinit" "const" Type [VDVar] ";" ;
+VDVarNoInit    . VDVar   ::= Id ;
+VDVarInit      . VDVar   ::= Id "=" Exp ;
 
 -- Expressions
 -- Literals
@@ -66,69 +65,68 @@ LChar     . Exp15 ::= Char ;
 LString   . Exp15 ::= [String] ;
 LTrue     . Exp15 ::= "true" ;
 LFalse    . Exp15 ::= "false" ;
--- qualified constants 
+-- Qualified Constants 
 EQuaConst . Exp15 ::= QConstant ;
--- indexing 
+-- Indexing 
 EIndex    . Exp14 ::= Exp14 "[" Exp "]" ;
--- function call
+-- Function call
 ECall     . Exp14 ::= Exp14 "(" [Exp] ")" ;
--- structure projection
+-- Structure projection
 EPoint    . Exp14 ::= Exp14 "." Exp15 ;
 EArrow    . Exp14 ::= Exp14 "->" Exp15 ;
--- in/decrement
+-- In/decrement
 EPostIncr . Exp14 ::= Exp14 "++" ;
 EPostDecr . Exp14 ::= Exp14 "--" ;
--- in/decrement, dereference, negation
+-- In/decrement, Dereference, Negation
 EPreIncr  . Exp13 ::= "++" Exp13 ;
 EPreDecr  . Exp13 ::= "--" Exp13 ;
 EDeref    . Exp13 ::= "*"  Exp13 ;
 ENeg      . Exp13 ::= "!"  Exp13 ;
--- unary plus/minus
+-- Unary plus/minus
 EUnPlus   . Exp13 ::= "+"  Exp13 ;
 EUnMinus  . Exp13 ::= "-"  Exp13 ;
--- Multiplication, Division,Remainder 
-EMul      . Exp12 ::= Exp12 "*"  Exp13 ;
-EDiv      . Exp12 ::= Exp12 "/"  Exp13 ;
-EMod      . Exp12 ::= Exp12 "%"  Exp13 ; 
+-- Multiplication, Division, Remainder 
+EMul      . Exp12 ::= Exp12 "*"   Exp13 ;
+EDiv      . Exp12 ::= Exp12 "/"   Exp13 ;
+EMod      . Exp12 ::= Exp12 "%"   Exp13 ; 
 -- Addition, Subtraction 
-EAdd      . Exp11 ::= Exp11 "+"  Exp12 ;
-ESub      . Exp11 ::= Exp11 "-"  Exp12 ;
--- left and right shift
+EAdd      . Exp11 ::= Exp11 "+"   Exp12 ;
+ESub      . Exp11 ::= Exp11 "-"   Exp12 ;
+-- Left and right shift
 ERShift   . Exp10 ::= Exp10 ">>"  Exp11 ;
 ELShift   . Exp10 ::= Exp10 "<<"  Exp11 ;
---three-way comparison
-ETWComp   . Exp9  ::= Exp9 "<=>" Exp10 ;
+-- Three-way comparison
+ETWComp   . Exp9  ::= Exp9  "<=>" Exp10 ;
 -- Comparison
-ELt       . Exp9  ::= Exp9  "<"  Exp10 ;
-EGt       . Exp9  ::= Exp9  ">"  Exp10 ;
-ELtEq     . Exp9  ::= Exp9  "<=" Exp10 ;
-EGtEq     . Exp9  ::= Exp9  ">=" Exp10 ;
--- (in)equality 
-EEq       . Exp8  ::= Exp8  "==" Exp9 ;
-ENEq      . Exp8  ::= Exp8  "!=" Exp9 ;
+ELt       . Exp9  ::= Exp9  "<"   Exp10 ;
+EGt       . Exp9  ::= Exp9  ">"   Exp10 ;
+ELtEq     . Exp9  ::= Exp9  "<="  Exp10 ;
+EGtEq     . Exp9  ::= Exp9  ">="  Exp10 ;
+-- (In)Equality 
+EEq       . Exp8  ::= Exp8  "=="  Exp9 ;
+ENEq      . Exp8  ::= Exp8  "!="  Exp9 ;
 -- Conjunction
-EAnd      . Exp4  ::= Exp4  "&&" Exp5 ;
+EAnd      . Exp4  ::= Exp4  "&&"  Exp5 ;
 -- Disjunction 
-EOr       . Exp3  ::= Exp3  "||" Exp4 ;
+EOr       . Exp3  ::= Exp3  "||"  Exp4 ;
 -- Assignment 
-EAssign   . Exp2  ::= Exp3 "="   Exp2 ;
-EAddAss   . Exp2  ::= Exp3 "+="  Exp2 ;
-ESubAss   . Exp2  ::= Exp3 "-="  Exp2 ;
+EAssign   . Exp2  ::= Exp3  "="   Exp2 ;
+EAddAss   . Exp2  ::= Exp3  "+="  Exp2 ;
+ESubAss   . Exp2  ::= Exp3  "-="  Exp2 ;
 -- Conditional 
-ECond     . Exp2  ::= Exp3 "?" Exp2 ":" Exp2 ;
---Exception 
+ECond     . Exp2  ::= Exp3  "?" Exp2 ":" Exp2 ;
+-- Exception 
 EExcep    . Exp1  ::= "throw" Exp1 ;
 coercions Exp 15 ;
 
-
 -- Types
-TAddr      . Type         ::= Type "&" ;
-TQCon      . Type         ::= QConstant ;
-TInt       . Type         ::= "int" ;
-TBool      . Type         ::= "bool" ;
-TChar      . Type         ::= "char" ;
-TDouble    . Type         ::= "double";
-TVoid      . Type         ::= "void";
+TAddr     . Type  ::= Type "&" ;
+TQCon     . Type  ::= QConstant ;
+TInt      . Type  ::= "int" ;
+TBool     . Type  ::= "bool" ;
+TChar     . Type  ::= "char" ;
+TDouble   . Type  ::= "double";
+TVoid     . Type  ::= "void";
 
 -- Separators and terminators here
 terminator Def "";
@@ -140,9 +138,9 @@ separator nonempty Type ",";
 separator Exp ",";
 separator nonempty String "";
 
---identifiers
+-- Identifiers
 token Id (letter (letter|digit|'_')*) ;
--- comments
+-- Comments
 comment "//";
 comment "/*" "*/";
 comment "#";
