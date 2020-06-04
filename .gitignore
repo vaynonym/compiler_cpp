@@ -1,3 +1,15 @@
 /bin
 /debug
 *.swp
+
+Absyn.*
+compiler
+*.l
+*.y
+*.yy.c
+Parser.H
+Printer.C
+Printer.H
+Skeleton.C
+Skeleton.H
+y.tab.c
