@@ -1,11 +1,18 @@
 #include <stdio.h>
+#include <iostream>
 #include "Parser.H"
 #include "Absyn.H"
+#include "TypeCheckVisitor.h"
+
+void typecheck(Program *pgm) {
+	TypeCheckVisitor visitor;
+	pgm->accept(&visitor);
+}
 
 void process(FILE* input) {
 	Program *parse_tree = pProgram(input);
 	if (parse_tree) {
-		printf("Type checker not implemented\n");
+		typecheck(parse_tree);
 	} else {
 		printf("SYNTAX ERROR\n");
 		exit(1);
