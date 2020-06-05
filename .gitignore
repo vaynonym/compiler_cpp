@@ -3,14 +3,5 @@
 /.vscode
 *.swp
 
-Absyn.*
-compiler
-*.l
-*.y
-*.yy.c
-Parser.H
-Printer.C
-Printer.H
-Skeleton.C
-Skeleton.H
-y.tab.c
+/project2/bin
+/project2/gen
