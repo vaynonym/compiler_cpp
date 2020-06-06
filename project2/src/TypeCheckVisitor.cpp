@@ -50,11 +50,25 @@ void TypeCheckVisitor::visitADecl(ADecl *p) {
 }
 
 void TypeCheckVisitor::visitSExp(SExp *p) {
-  
+  p->exp_->accept(this);
 }
 
 void TypeCheckVisitor::visitSDecls(SDecls *p) {
+  p->type_->accept(this);
+  const BasicType *declType = currentContext->findBasicType(currentTypeId);
+
+  if (declType == nullptr) {
+    throw UnknownType(currentTypeId);
+    return;
+  }
   
+  for (Id id : *(p->listid_)){
+    if(currentContext->findSymbol(id) != nullptr){
+      throw IdentifierAlreadyExists(id);
+    }
+    currentContext->addSymbol(id, declType);
+  }
+
 }
 
 void TypeCheckVisitor::visitSInit(SInit *p) {
@@ -291,17 +305,17 @@ void TypeCheckVisitor::visitEOr(EOr *p) {
 }
 
 void TypeCheckVisitor::visitEAss(EAss *p) {
+
   p->exp_1->accept(this);
   const BasicType *firstresultExpType = resultExpType;
-
+  
   p->exp_2->accept(this);
   // checks if right hand side is convertible to type of left hand side
   if (!resultExpType->isConvertibleTo(firstresultExpType)) {
     throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "= operator");
   }
-  // TODO: check if right hand side is initialized
   // sets resultExpType back to type of left hand side
-  p->exp_1->accept(this); 
+  resultExpType = firstresultExpType;
 }
 
 void TypeCheckVisitor::visitECond(ECond *p) {
@@ -315,17 +329,9 @@ void TypeCheckVisitor::visitECond(ECond *p) {
   const BasicType *firstresultExpType = resultExpType;
 
   p->exp_3->accept(this);
-  if (!resultExpType->isConvertibleTo(firstresultExpType)){
-    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "third operator not convertible to type of second operator");
+  if (resultExpType != firstresultExpType){
+    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "second and third operand");
   }
-
-  const BasicType *secondresultExpType = resultExpType;
-  p->exp_2->accept(this);
-  if (!resultExpType->isConvertibleTo(secondresultExpType)){
-    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "second operator not convertible to type of third operator");
-  }
-
-  //TODO: type error in the ternary operator can lead to 2 different resultExpType and may invoke other problems
 }
 
 void TypeCheckVisitor::visitType_bool(Type_bool *p) {
