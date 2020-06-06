@@ -1,5 +1,6 @@
 #include "TypeCheckVisitor.h"
 #include <iostream>
+#include "Errors.h"
 
 #define LOG_LINE std::cout << "Line " << __LINE__ << std::endl;
 
@@ -17,7 +18,13 @@ void TypeCheckVisitor::visitPDefs(PDefs *p) {
 
 void TypeCheckVisitor::visitListDef(ListDef *p) {
   for (auto def : *p) {
-      def->accept(this);
+      try {
+        def->accept(this);
+      } catch(TypeCheckingError *e) {
+        std::cout << e->printError() << std::endl;
+      }
+        
+
   }
 }
 
@@ -188,7 +195,17 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
 }
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
-  
+    
+    p->exp_1->accept(this);
+    const BasicType *expectedType = resultExpType;
+
+    p->exp_2->accept(this);
+    
+    if(! resultExpType->isConvertibleTo(expectedType)) {
+      throw new TypeMismatch(expectedType->Id, resultExpType->Id, "== operand");
+    }
+
+    resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
