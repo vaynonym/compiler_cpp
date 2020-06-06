@@ -25,8 +25,10 @@ gen: CPP.cf
 	rm -f gen/Test.C
 	cd gen/; flex CPP.l
 	cd gen/; yacc CPP.y
-	mv gen/lex.yy.c gen/lex.yy.C
-	mv gen/y.tab.c gen/y.tab.C
+	mv gen/lex.yy.c gen/lex.yy.tmp
+	mv gen/y.tab.c gen/y.tab.tmp
+	mv gen/lex.yy.tmp gen/lex.yy.C
+	mv gen/y.tab.tmp gen/y.tab.C
 
 clean:
 	rm -rf bin/
