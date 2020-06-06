@@ -20,18 +20,20 @@ void TypeCheckVisitor::visitListDef(ListDef *p) {
   for (auto def : *p) {
       try {
         def->accept(this);
-      } catch(TypeCheckingError *e) {
-        std::cout << e->printError() << std::endl;
+      } catch(TypeCheckingError &e) {
+        std::cout << e.printError() << std::endl;
       }
-        
-
   }
 }
 
 void TypeCheckVisitor::visitDFun(DFun *p) {
   // TODO: Return types, arguments, child contexts, etc
   for (auto stm : *p->liststm_) {
-    stm->accept(this);
+    try {
+      stm->accept(this);
+    } catch (TypeCheckingError &e) {
+      std::cout << e.printError() << std::endl;
+    }
   }
 }
 
@@ -202,7 +204,7 @@ void TypeCheckVisitor::visitEEq(EEq *p) {
     p->exp_2->accept(this);
     
     if(! resultExpType->isConvertibleTo(expectedType)) {
-      throw new TypeMismatch(expectedType->Id, resultExpType->Id, "== operand");
+      throw TypeMismatch(expectedType->Id, resultExpType->Id, "== operand");
     }
 
     resultExpType = Context::TYPE_BOOL;

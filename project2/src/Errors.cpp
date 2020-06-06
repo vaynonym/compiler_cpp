@@ -1,5 +1,10 @@
 #include "Errors.h"
 
+// TypeCheckingError
+string TypeCheckingError::printError() {
+    return "TypeCheckingError!!!";
+}
+
 // TypeMismatch
 TypeMismatch::TypeMismatch(string expectedType, string actualType, string additionalInformation = "")
     : expectedType(expectedType), actualType(actualType), additionalInformation(additionalInformation) {
@@ -10,8 +15,8 @@ TypeMismatch::~TypeMismatch() {}
 
 string TypeMismatch::printError(){
     
-    string errorString = "Expected type" + expectedType + "\n"
-                  + "but got type" + actualType + "\n";
+    string errorString = "Expected type " + expectedType + "\n"
+                  + "but got type " + actualType + "\n";
 
     if(additionalInformation != "")
         errorString += "Look toward " + additionalInformation + "\n";

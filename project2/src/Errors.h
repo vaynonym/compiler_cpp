@@ -3,17 +3,21 @@
 
 using namespace std;
 
-class TypeCheckingError : exception {
+class TypeCheckingError : public exception{
 public:
-    virtual string printError() = 0;
+    virtual ~TypeCheckingError(){};
+    virtual string printError();
+
 };
 
-class TypeMismatch : TypeCheckingError {
+class TypeMismatch : public TypeCheckingError {
 
 public:
-    TypeMismatch(string expectedType, string actualType, string additionalInformation = "");
+    TypeMismatch(string expectedType, string actualType, string additionalInformation);
     ~TypeMismatch();
     string printError();
+
+
 
 private:
     string expectedType;
@@ -21,10 +25,10 @@ private:
     string additionalInformation;
 };
 
-class FunctionSignatureMismatch : TypeCheckingError {
+class FunctionSignatureMismatch : public TypeCheckingError {
     
 public:
-    FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation = "");
+    FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation);
     ~FunctionSignatureMismatch();
     string printError();
 
@@ -35,10 +39,10 @@ private:
     string additionalInformation;
 };
 
-class UnknownType : TypeCheckingError {
+class UnknownType : public TypeCheckingError {
 
 public:
-    UnknownType(string unknownType, string additionalInformation = "");
+    UnknownType(string unknownType, string additionalInformation);
     ~UnknownType();
     string printError();
 
@@ -47,10 +51,10 @@ private:
     string additionalInformation;
 };
 
-class TypeAlreadyExists : TypeCheckingError {
+class TypeAlreadyExists : public TypeCheckingError {
 
 public:
-    TypeAlreadyExists(string type, string additionalInformation = "");
+    TypeAlreadyExists(string type, string additionalInformation);
     ~TypeAlreadyExists();
     string printError();
 
@@ -59,9 +63,9 @@ private:
     string additionalInformation;
 };
 
-class UnknownIdentifier : TypeCheckingError {
+class UnknownIdentifier : public TypeCheckingError {
 public:
-    UnknownIdentifier(string unknownIdentifier, string additionalInformation = "");
+    UnknownIdentifier(string unknownIdentifier, string additionalInformation);
     ~UnknownIdentifier();
     string printError();
 
@@ -70,10 +74,10 @@ private:
     string additionalInformation;
 };
 
-class IdentifierAlreadyExists : TypeCheckingError {
+class IdentifierAlreadyExists : public TypeCheckingError {
 
 public:
-    IdentifierAlreadyExists(string identifier, string additionalInformation = "");
+    IdentifierAlreadyExists(string identifier, string additionalInformation);
     ~IdentifierAlreadyExists();
     string printError();
 
