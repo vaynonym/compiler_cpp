@@ -3,6 +3,7 @@ int main() {
     bool b = 3.0 <= 4;
     bool c = 4 <= 5.0;
     
-    bool y = 4 <= b;
+    bool y = 4 <= true;
+    bool x = false <= 4.0;
 
 }
