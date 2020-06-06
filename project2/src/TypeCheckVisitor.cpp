@@ -69,12 +69,12 @@ void TypeCheckVisitor::visitSInit(SInit *p) {
   p->exp_->accept(this);
 
   if (!resultExpType->isConvertibleTo(declType)) {
-    // TODO: Error handling
-    std::cout << "Type mismatch" << std::endl;
-    return;
+    throw TypeMismatch(declType->Id, resultExpType->Id, "initialization");
   }
 
-  // TODO: Check if name already exists
+  if(currentContext->findSymbol(p->id_) != nullptr){
+    throw IdentifierAlreadyExists(p->id_);
+  }
   currentContext->addSymbol(p->id_, declType);
 }
 
@@ -95,7 +95,16 @@ void TypeCheckVisitor::visitSDoWhile(SDoWhile *p) {
 }
 
 void TypeCheckVisitor::visitSFor(SFor *p) {
-  
+  p->exp_1->accept(this);
+
+  p->exp_2->accept(this);
+  if(resultExpType != Context::TYPE_BOOL){
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "second expression of for statement");
+  }
+
+  p->exp_3->accept(this);
+
+  p->stm_->accept(this);
 }
 
 void TypeCheckVisitor::visitSBlock(SBlock *p) {
@@ -151,7 +160,20 @@ void TypeCheckVisitor::visitEDecr(EDecr *p) {
 }
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
-  
+  p->exp_1->accept(this);
+  const BasicType *firstType = resultExpType;
+  if(firstType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, firstType->Id, "multiplication.");
+  }
+
+  p->exp_2->accept(this);
+  if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)) {
+    throw TypeMismatch(firstType->Id, resultExpType->Id, "multiplication");
+  }
+
+  if(resultExpType->isConvertibleTo(firstType)) {
+    resultExpType = firstType;
+  }
 }
 
 void TypeCheckVisitor::visitEDiv(EDiv *p) {
@@ -189,7 +211,17 @@ void TypeCheckVisitor::visitEGt(EGt *p) {
 }
 
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
+  p->exp_1->accept(this);
+  if(resultExpType != Context::TYPE_BOOL){
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, " <=");
+  }
+
+  p->exp_2->accept(this);
+  if(resultExpType != Context::TYPE_BOOL){
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, " <=");
+  }
   
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
@@ -211,7 +243,17 @@ void TypeCheckVisitor::visitEEq(EEq *p) {
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
-  
+    
+    p->exp_1->accept(this);
+    const BasicType *expectedType = resultExpType;
+
+    p->exp_2->accept(this);
+    
+    if(! resultExpType->isConvertibleTo(expectedType)) {
+      throw TypeMismatch(expectedType->Id, resultExpType->Id, "!= operand");
+    }
+
+    resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEAnd(EAnd *p) {
