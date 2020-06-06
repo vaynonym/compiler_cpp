@@ -161,14 +161,14 @@ void TypeCheckVisitor::visitEDecr(EDecr *p) {
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
   p->exp_1->accept(this);
-  const BasicType *firstType = resultExpType;
-  if(firstType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, firstType->Id, "multiplication.");
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "multiplication");
   }
+  const BasicType *firstType = resultExpType; 
 
   p->exp_2->accept(this);
   if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)) {
-    throw TypeMismatch(firstType->Id, resultExpType->Id, "multiplication");
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "multiplication");
   }
 
   if(resultExpType->isConvertibleTo(firstType)) {
@@ -212,13 +212,14 @@ void TypeCheckVisitor::visitEGt(EGt *p) {
 
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
   p->exp_1->accept(this);
-  if(resultExpType != Context::TYPE_BOOL){
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, " <=");
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " <=");
   }
+  const BasicType *firstType = resultExpType; 
 
   p->exp_2->accept(this);
-  if(resultExpType != Context::TYPE_BOOL){
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, " <=");
+  if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " <=");
   }
   
   resultExpType = Context::TYPE_BOOL;
@@ -235,7 +236,7 @@ void TypeCheckVisitor::visitEEq(EEq *p) {
 
     p->exp_2->accept(this);
     
-    if(! resultExpType->isConvertibleTo(expectedType)) {
+    if(! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
       throw TypeMismatch(expectedType->Id, resultExpType->Id, "== operand");
     }
 
@@ -249,7 +250,7 @@ void TypeCheckVisitor::visitENEq(ENEq *p) {
 
     p->exp_2->accept(this);
     
-    if(! resultExpType->isConvertibleTo(expectedType)) {
+    if( ! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
       throw TypeMismatch(expectedType->Id, resultExpType->Id, "!= operand");
     }
 
