@@ -215,7 +215,23 @@ void TypeCheckVisitor::visitETimes(ETimes *p) {
 }
 
 void TypeCheckVisitor::visitEDiv(EDiv *p) {
-  
+  p->exp_1->accept(this);
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "division");
+  }
+  const BasicType *firstType = resultExpType; 
+
+  p->exp_2->accept(this);
+  if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)) {
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "division");
+  }
+
+  if(firstType==Context::TYPE_INT&&resultExpType==Context::TYPE_INT){
+    resultExpType = firstType;
+  }
+  else{
+    resultExpType = Context::TYPE_DOUBLE;
+  }
 }
 
 void TypeCheckVisitor::visitEPlus(EPlus *p) {
