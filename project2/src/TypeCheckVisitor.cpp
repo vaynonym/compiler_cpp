@@ -132,7 +132,12 @@ void TypeCheckVisitor::visitEDouble(EDouble *p) {
 }
 
 void TypeCheckVisitor::visitEId(EId *p) {
-  
+  const BasicType *type = currentContext->findSymbol(p->id_);
+  if (type == nullptr) {
+    throw UnknownType(p->id_);
+  }
+
+  resultExpType = type;
 }
 
 void TypeCheckVisitor::visitEApp(EApp *p) {
@@ -191,12 +196,12 @@ void TypeCheckVisitor::visitEMinus(EMinus *p) {
 void TypeCheckVisitor::visitETwc(ETwc *p) {
   p->exp_1->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    // TODO: throw error
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
   }
 
   p->exp_2->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    // TODO: throw error
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
   }
 
   resultExpType = Context::TYPE_INT;
@@ -260,21 +265,29 @@ void TypeCheckVisitor::visitENEq(ENEq *p) {
 void TypeCheckVisitor::visitEAnd(EAnd *p) {
   p->exp_1->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    // TODO: throw type mismatch error
-    std::cout << "Type Error!" << std::endl;
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
   }
 
   p->exp_2->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    // TODO: throw type mismatch error
-    std::cout << "Type Error!" << std::endl;
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
   }
 
   resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEOr(EOr *p) {
-  
+  p->exp_1->accept(this);
+  if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+  }
+
+  p->exp_2->accept(this);
+  if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+  }
+
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEAss(EAss *p) {
