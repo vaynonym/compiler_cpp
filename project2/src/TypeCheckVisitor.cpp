@@ -313,6 +313,16 @@ void TypeCheckVisitor::visitELtEq(ELtEq *p) {
 }
 
 void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
+  p->exp_1->accept(this);
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " >=");
+  }
+  p->exp_2->accept(this);
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " >=");
+  }
+  
+  resultExpType = Context::TYPE_BOOL;
   
 }
 
