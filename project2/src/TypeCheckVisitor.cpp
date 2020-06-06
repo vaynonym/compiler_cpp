@@ -105,7 +105,13 @@ void TypeCheckVisitor::visitSWhile(SWhile *p) {
 }
 
 void TypeCheckVisitor::visitSDoWhile(SDoWhile *p) {
-  
+
+  p->stm_->accept(this);
+
+  p->exp_->accept(this);
+  if(resultExpType != Context::TYPE_BOOL){
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "Do while statement, condition expression");
+  }
 }
 
 void TypeCheckVisitor::visitSFor(SFor *p) {
@@ -200,7 +206,23 @@ void TypeCheckVisitor::visitEDiv(EDiv *p) {
 }
 
 void TypeCheckVisitor::visitEPlus(EPlus *p) {
-  
+  p->exp_1->accept(this);
+  if(!(resultExpType == Context::TYPE_DOUBLE || resultExpType == Context::TYPE_INT)){
+    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Addition, first operand");
+  }
+
+  const BasicType* firstresultExpType = resultExpType;
+
+  p->exp_2->accept(this);
+  if(!(resultExpType == Context::TYPE_DOUBLE || resultExpType == Context::TYPE_INT)){
+    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Addition, second operand");
+  }
+  // in this simple grammar (only int and double as numeric types) this checks for 'int + double' and 'double + int', in both cases we have
+  // to convert int to double 
+  // technically, this should throw a warning
+  if(resultExpType != firstresultExpType){
+    resultExpType = Context::TYPE_DOUBLE;
+  }
 }
 
 void TypeCheckVisitor::visitEMinus(EMinus *p) {
@@ -222,7 +244,18 @@ void TypeCheckVisitor::visitETwc(ETwc *p) {
 }
 
 void TypeCheckVisitor::visitELt(ELt *p) {
-  
+
+  p->exp_1->accept(this);
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Less than operator, first operand");
+  }
+
+  p->exp_2->accept(this);
+  if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
+    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Less than operator, second operand");
+  }
+
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEGt(EGt *p) {
