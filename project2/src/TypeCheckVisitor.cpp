@@ -169,20 +169,33 @@ void TypeCheckVisitor::visitEProj(EProj *p) {
 }
 
 void TypeCheckVisitor::visitEPIncr(EPIncr *p) {
-  
-}
+ p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+  }
+ 
+} 
 
 void TypeCheckVisitor::visitEPDecr(EPDecr *p) {
-  
-}
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+  }
+ }
 
 void TypeCheckVisitor::visitEIncr(EIncr *p) {
-
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+  }
 }
 
 void TypeCheckVisitor::visitEDecr(EDecr *p) {
-  
-}
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+  }
+ }
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
   p->exp_1->accept(this);
