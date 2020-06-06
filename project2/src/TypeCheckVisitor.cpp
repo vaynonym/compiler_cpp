@@ -291,11 +291,41 @@ void TypeCheckVisitor::visitEOr(EOr *p) {
 }
 
 void TypeCheckVisitor::visitEAss(EAss *p) {
-  
+  p->exp_1->accept(this);
+  const BasicType *firstresultExpType = resultExpType;
+
+  p->exp_2->accept(this);
+  // checks if right hand side is convertible to type of left hand side
+  if (!resultExpType->isConvertibleTo(firstresultExpType)) {
+    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "= operator");
+  }
+  // TODO: check if right hand side is initialized
+  // sets resultExpType back to type of left hand side
+  p->exp_1->accept(this); 
 }
 
 void TypeCheckVisitor::visitECond(ECond *p) {
-  
+  p->exp_1->accept(this);
+  if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "condition in the ternary operator");
+  } 
+
+  p->exp_2->accept(this);
+
+  const BasicType *firstresultExpType = resultExpType;
+
+  p->exp_3->accept(this);
+  if (!resultExpType->isConvertibleTo(firstresultExpType)){
+    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "third operator not convertible to type of second operator");
+  }
+
+  const BasicType *secondresultExpType = resultExpType;
+  p->exp_2->accept(this);
+  if (!resultExpType->isConvertibleTo(secondresultExpType)){
+    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "second operator not convertible to type of third operator");
+  }
+
+  //TODO: type error in the ternary operator can lead to 2 different resultExpType and may invoke other problems
 }
 
 void TypeCheckVisitor::visitType_bool(Type_bool *p) {
