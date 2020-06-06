@@ -132,7 +132,13 @@ void TypeCheckVisitor::visitSBlock(SBlock *p) {
 }
 
 void TypeCheckVisitor::visitSIfElse(SIfElse *p) {
-  
+  p->exp_->accept(this);
+  if(resultExpType != Context::TYPE_BOOL){
+    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "IfElse statement, conditional expression");
+  }
+  p->stm_1->accept(this);
+  p->stm_2->accept(this);
+   
 }
 
 void TypeCheckVisitor::visitETrue(ETrue *p) {
