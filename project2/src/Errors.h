@@ -13,7 +13,7 @@ public:
 class TypeMismatch : public TypeCheckingError {
 
 public:
-    TypeMismatch(string expectedType, string actualType, string additionalInformation);
+    TypeMismatch(string expectedType, string actualType, string additionalInformation = "");
     ~TypeMismatch();
     string printError();
 
@@ -28,7 +28,7 @@ private:
 class FunctionSignatureMismatch : public TypeCheckingError {
     
 public:
-    FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation);
+    FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation = "");
     ~FunctionSignatureMismatch();
     string printError();
 
@@ -42,7 +42,7 @@ private:
 class UnknownType : public TypeCheckingError {
 
 public:
-    UnknownType(string unknownType, string additionalInformation);
+    UnknownType(string unknownType, string additionalInformation = "");
     ~UnknownType();
     string printError();
 
@@ -54,7 +54,7 @@ private:
 class TypeAlreadyExists : public TypeCheckingError {
 
 public:
-    TypeAlreadyExists(string type, string additionalInformation);
+    TypeAlreadyExists(string type, string additionalInformation = "");
     ~TypeAlreadyExists();
     string printError();
 
@@ -65,7 +65,7 @@ private:
 
 class UnknownIdentifier : public TypeCheckingError {
 public:
-    UnknownIdentifier(string unknownIdentifier, string additionalInformation);
+    UnknownIdentifier(string unknownIdentifier, string additionalInformation = "");
     ~UnknownIdentifier();
     string printError();
 
@@ -77,7 +77,7 @@ private:
 class IdentifierAlreadyExists : public TypeCheckingError {
 
 public:
-    IdentifierAlreadyExists(string identifier, string additionalInformation);
+    IdentifierAlreadyExists(string identifier, string additionalInformation = "");
     ~IdentifierAlreadyExists();
     string printError();
 

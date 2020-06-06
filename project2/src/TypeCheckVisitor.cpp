@@ -62,7 +62,7 @@ void TypeCheckVisitor::visitSInit(SInit *p) {
   const BasicType *declType = currentContext->findBasicType(currentTypeId);
 
   if (declType == nullptr) {
-    // TODO: Error handling
+    throw UnknownType(currentTypeId);
     return;
   }
 

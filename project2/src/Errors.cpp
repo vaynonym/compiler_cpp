@@ -6,7 +6,7 @@ string TypeCheckingError::printError() {
 }
 
 // TypeMismatch
-TypeMismatch::TypeMismatch(string expectedType, string actualType, string additionalInformation = "")
+TypeMismatch::TypeMismatch(string expectedType, string actualType, string additionalInformation)
     : expectedType(expectedType), actualType(actualType), additionalInformation(additionalInformation) {
 
     }
@@ -25,7 +25,7 @@ string TypeMismatch::printError(){
 }
 
 // FunctionSignatureMismatch
-FunctionSignatureMismatch::FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation = "")
+FunctionSignatureMismatch::FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation)
     : expectedSignature(expectedSignature), actualSignature(actualSignature), functionIdentifier(functionIdentifier), additionalInformation(additionalInformation) {
 
 }
@@ -44,7 +44,7 @@ string FunctionSignatureMismatch::printError(){
 }
 
 // UnknownType
-UnknownType::UnknownType(string unknownType, string additionalInformation = "") 
+UnknownType::UnknownType(string unknownType, string additionalInformation) 
     : unknownType(unknownType), additionalInformation(additionalInformation) {
 
 } 
@@ -65,7 +65,7 @@ string UnknownType::printError(){
 }
 
 // TypeAlreadyExists
-TypeAlreadyExists::TypeAlreadyExists(string type, string additionalInformation = "")
+TypeAlreadyExists::TypeAlreadyExists(string type, string additionalInformation)
     : type(type), additionalInformation(additionalInformation) {
 
 }
@@ -87,7 +87,7 @@ string TypeAlreadyExists::printError() {
 
 // UnknownIdentifier
 
-UnknownIdentifier::UnknownIdentifier(string unknownIdentifier, string additionalInformation = "")
+UnknownIdentifier::UnknownIdentifier(string unknownIdentifier, string additionalInformation)
     : unknownIdentifier(unknownIdentifier), additionalInformation(additionalInformation) {
 
 }
@@ -109,7 +109,7 @@ string UnknownIdentifier::printError() {
 
 // IdentifierAlreadyExists
 
-IdentifierAlreadyExists::IdentifierAlreadyExists(string identifier, string additionalInformation = "")
+IdentifierAlreadyExists::IdentifierAlreadyExists(string identifier, string additionalInformation)
     : identifier(identifier), additionalInformation(additionalInformation) {
 
 }
