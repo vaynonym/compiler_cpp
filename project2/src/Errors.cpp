@@ -35,7 +35,7 @@ FunctionSignatureMismatch::~FunctionSignatureMismatch() {}
 string FunctionSignatureMismatch::printError(){
     
     string errorString = "Expected signature " + expectedSignature + " for function " + functionIdentifier + "\n"
-                  + "but got signature " + expectedSignature + "\n";
+                  + "but got signature " + actualSignature + "\n";
 
     if(additionalInformation != "")
         errorString += "Look toward " + additionalInformation + "\n";
