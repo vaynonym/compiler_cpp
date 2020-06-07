@@ -1,12 +1,14 @@
+#pragma once
+
 #include <exception>
 #include <string>
 
 using namespace std;
 
-class TypeCheckingError : public exception{
+class TypeCheckingError : public exception {
 public:
     virtual ~TypeCheckingError(){};
-    virtual string printError();
+    virtual string printError() const;
 
 };
 
@@ -15,7 +17,7 @@ class TypeMismatch : public TypeCheckingError {
 public:
     TypeMismatch(string expectedType, string actualType, string additionalInformation = "");
     ~TypeMismatch();
-    string printError();
+    string printError() const;
 
 
 
@@ -30,7 +32,7 @@ class FunctionSignatureMismatch : public TypeCheckingError {
 public:
     FunctionSignatureMismatch(string expectedSignature, string actualSignature, string functionIdentifier, string additionalInformation = "");
     ~FunctionSignatureMismatch();
-    string printError();
+    string printError() const;
 
 private:
     string expectedSignature;
@@ -44,7 +46,7 @@ class UnknownType : public TypeCheckingError {
 public:
     UnknownType(string unknownType, string additionalInformation = "");
     ~UnknownType();
-    string printError();
+    string printError() const;
 
 private:
     string unknownType;
@@ -56,7 +58,7 @@ class TypeAlreadyExists : public TypeCheckingError {
 public:
     TypeAlreadyExists(string type, string additionalInformation = "");
     ~TypeAlreadyExists();
-    string printError();
+    string printError() const;
 
 private: 
     string type;
@@ -67,7 +69,7 @@ class UnknownIdentifier : public TypeCheckingError {
 public:
     UnknownIdentifier(string unknownIdentifier, string additionalInformation = "");
     ~UnknownIdentifier();
-    string printError();
+    string printError() const;
 
 private:
     string unknownIdentifier;
@@ -79,7 +81,7 @@ class IdentifierAlreadyExists : public TypeCheckingError {
 public:
     IdentifierAlreadyExists(string identifier, string additionalInformation = "");
     ~IdentifierAlreadyExists();
-    string printError();
+    string printError() const;
 
 private:
     string identifier;

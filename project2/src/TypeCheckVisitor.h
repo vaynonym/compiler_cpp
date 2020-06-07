@@ -3,6 +3,7 @@
 #include <memory>
 #include "EmptyVisitor.h"
 #include "Context.h"
+#include "Errors.h"
 
 class TypeCheckVisitor : public EmptyVisitor
 {
@@ -14,6 +15,9 @@ private:
 
   void beginContext();
   void endContext();
+
+  void handleError(const TypeCheckingError &e);
+  void tryVisit(Visitable *v);
 public:
   TypeCheckVisitor();
   virtual ~TypeCheckVisitor();

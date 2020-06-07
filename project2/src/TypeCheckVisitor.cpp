@@ -22,13 +22,21 @@ void TypeCheckVisitor::endContext() {
   delete oldContext;
 }
 
+void TypeCheckVisitor::handleError(const TypeCheckingError &e) {
+  std::cout << e.printError() << std::endl;
+}
+
+void TypeCheckVisitor::tryVisit(Visitable *v) {
+  try {
+    v->accept(this);
+  } catch (const TypeCheckingError &e) {
+    handleError(e);
+  }
+}
+
 void TypeCheckVisitor::visitPDefs(PDefs *p) {
   for (auto def : *p->listdef_) {
-    try {
-      def->accept(this);
-    } catch(TypeCheckingError &e) {
-      std::cout << e.printError() << std::endl;
-    }
+    tryVisit(def);
   }
 }
 
@@ -42,12 +50,12 @@ void TypeCheckVisitor::visitDFun(DFun *p) {
     adecl->type_->accept(this);
     const BasicType *argType = currentContext->findBasicType(currentTypeId);
     if (argType == nullptr) {
-      std::cout << UnknownType(currentTypeId, "function argument").printError() << std::endl;
+      handleError(UnknownType(currentTypeId, "function argument"));
       continue;
     }
 
     if (!currentContext->addSymbol(adecl->id_, argType)) {
-      std::cout << IdentifierAlreadyExists(adecl->id_).printError() << std::endl;
+      handleError(IdentifierAlreadyExists(adecl->id_));
       continue;
     }
 
@@ -57,17 +65,13 @@ void TypeCheckVisitor::visitDFun(DFun *p) {
   p->type_->accept(this);
   const BasicType *returnType = currentContext->findBasicType(currentTypeId);
   if (returnType == nullptr) {
-    std::cout << UnknownType(currentTypeId, "function return type").printError() << std::endl;
+    handleError(UnknownType(currentTypeId, "function return type"));
   }
 
   this->returnType = returnType;
 
   for (auto stm : *p->liststm_) {
-    try {
-      stm->accept(this);
-    } catch (TypeCheckingError &e) {
-      std::cout << e.printError() << std::endl;
-    }
+    tryVisit(stm);
   }
 
   endContext();
@@ -86,14 +90,14 @@ void TypeCheckVisitor::visitDStruct(DStruct *p) {
     FDecl *fdecl = (FDecl *) field;
 
     if (members.find(fdecl->id_) != members.end()) {
-      std::cout << IdentifierAlreadyExists(fdecl->id_).printError() << std::endl;
+      handleError(IdentifierAlreadyExists(fdecl->id_));
       continue;
     }
 
     fdecl->type_->accept(this);
     const BasicType *memberType = currentContext->findBasicType(currentTypeId);
     if (memberType == nullptr) {
-      std::cout << UnknownType(currentTypeId, "struct member").printError() << std::endl;
+      handleError(UnknownType(currentTypeId, "struct member"));
       continue;
     }
 
@@ -190,11 +194,7 @@ void TypeCheckVisitor::visitSBlock(SBlock *p) {
   beginContext();
 
   for (auto stm : *p->liststm_) {
-    try {
-      stm->accept(this);
-    } catch (TypeCheckingError &e) {
-      std::cout << e.printError() << std::endl;
-    }
+    tryVisit(stm);
   }
 
   endContext();
@@ -431,29 +431,29 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
 }
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
-    p->exp_1->accept(this);
-    const BasicType *expectedType = resultExpType;
+  p->exp_1->accept(this);
+  const BasicType *expectedType = resultExpType;
 
-    p->exp_2->accept(this);
-    
-    if(! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-      throw TypeMismatch(expectedType->id, resultExpType->id, "== operand");
-    }
+  p->exp_2->accept(this);
+  
+  if(! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
+    throw TypeMismatch(expectedType->id, resultExpType->id, "== operand");
+  }
 
-    resultExpType = Context::TYPE_BOOL;
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
-    p->exp_1->accept(this);
-    const BasicType *expectedType = resultExpType;
+  p->exp_1->accept(this);
+  const BasicType *expectedType = resultExpType;
 
-    p->exp_2->accept(this);
-    
-    if( ! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-      throw TypeMismatch(expectedType->id, resultExpType->id, "!= operand");
-    }
+  p->exp_2->accept(this);
+  
+  if( ! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
+    throw TypeMismatch(expectedType->id, resultExpType->id, "!= operand");
+  }
 
-    resultExpType = Context::TYPE_BOOL;
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEAnd(EAnd *p) {

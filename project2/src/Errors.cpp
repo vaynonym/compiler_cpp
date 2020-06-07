@@ -1,7 +1,7 @@
 #include "Errors.h"
 
 // TypeCheckingError
-string TypeCheckingError::printError() {
+string TypeCheckingError::printError() const {
     return "TypeCheckingError!!!";
 }
 
@@ -9,11 +9,11 @@ string TypeCheckingError::printError() {
 TypeMismatch::TypeMismatch(string expectedType, string actualType, string additionalInformation)
     : expectedType(expectedType), actualType(actualType), additionalInformation(additionalInformation) {
 
-    }
+}
 
 TypeMismatch::~TypeMismatch() {}
 
-string TypeMismatch::printError(){
+string TypeMismatch::printError() const {
     
     string errorString = "Expected type " + expectedType + "\n"
                   + "but got type " + actualType + "\n";
@@ -32,7 +32,7 @@ FunctionSignatureMismatch::FunctionSignatureMismatch(string expectedSignature, s
 
 FunctionSignatureMismatch::~FunctionSignatureMismatch() {}
 
-string FunctionSignatureMismatch::printError(){
+string FunctionSignatureMismatch::printError() const {
     
     string errorString = "Expected signature " + expectedSignature + " for function " + functionIdentifier + "\n"
                   + "but got signature " + actualSignature + "\n";
@@ -51,7 +51,7 @@ UnknownType::UnknownType(string unknownType, string additionalInformation)
 
 UnknownType::~UnknownType() {}
 
-string UnknownType::printError(){
+string UnknownType::printError() const {
     
     string errorString = "Type " + unknownType + " is unknown.\n" +
                          "As are many things in life.\n" +
@@ -72,7 +72,7 @@ TypeAlreadyExists::TypeAlreadyExists(string type, string additionalInformation)
 
 TypeAlreadyExists::~TypeAlreadyExists() {}
 
-string TypeAlreadyExists::printError() {
+string TypeAlreadyExists::printError() const {
 
     string errorString = "Type " + type + " already defined.\n" +
                          "A rare thing, to know for certain.\n" +
@@ -94,7 +94,7 @@ UnknownIdentifier::UnknownIdentifier(string unknownIdentifier, string additional
 
 UnknownIdentifier::~UnknownIdentifier() {}
 
-string UnknownIdentifier::printError() {
+string UnknownIdentifier::printError() const {
     
     string errorString = "Identifier " + unknownIdentifier + " is unknown.\n" +
                          "While your wildest fantasies run rampant,\n" +
@@ -116,7 +116,7 @@ IdentifierAlreadyExists::IdentifierAlreadyExists(string identifier, string addit
 
 IdentifierAlreadyExists::~IdentifierAlreadyExists() {}
 
-string IdentifierAlreadyExists::printError() {
+string IdentifierAlreadyExists::printError() const {
 
     string errorString = "Identifier " + identifier + " already defined.\n" +
                          "The past's certainty is tempting.\n" +
