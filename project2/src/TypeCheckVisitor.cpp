@@ -6,6 +6,7 @@
 
 TypeCheckVisitor::TypeCheckVisitor() {
   currentContext = Context::getDefaultContext();
+  anyErrors = false;
 }
 
 TypeCheckVisitor::~TypeCheckVisitor() {
@@ -23,7 +24,8 @@ void TypeCheckVisitor::endContext() {
 }
 
 void TypeCheckVisitor::handleError(const TypeCheckingError &e) {
-  std::cout << e.printError() << std::endl;
+  std::cout << "TYPE ERROR" << std::endl << e.printError() << std::endl << std::endl;
+  anyErrors = true;
 }
 
 void TypeCheckVisitor::tryVisit(Visitable *v) {

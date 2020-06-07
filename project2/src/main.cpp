@@ -7,6 +7,10 @@
 void typecheck(Program *pgm) {
 	TypeCheckVisitor visitor;
 	pgm->accept(&visitor);
+
+	if (!visitor.anyErrors) {
+		std::cout << "OK" << std::endl;
+	}
 }
 
 void process(FILE* input) {

@@ -22,6 +22,8 @@ public:
   TypeCheckVisitor();
   virtual ~TypeCheckVisitor();
 
+  bool anyErrors;
+
   virtual void visitPDefs(PDefs *p) ;
   virtual void visitDFun(DFun *p) ;
   virtual void visitDStruct(DStruct *p) ;
