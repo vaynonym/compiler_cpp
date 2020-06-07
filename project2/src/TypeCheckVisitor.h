@@ -10,6 +10,10 @@ private:
   Context *currentContext;
   std::string currentTypeId;
   const BasicType *resultExpType;
+  const BasicType *returnType;
+
+  void beginContext();
+  void endContext();
 public:
   TypeCheckVisitor();
   virtual ~TypeCheckVisitor();
@@ -17,8 +21,6 @@ public:
   virtual void visitPDefs(PDefs *p) ;
   virtual void visitDFun(DFun *p) ;
   virtual void visitDStruct(DStruct *p) ;
-  virtual void visitFDecl(FDecl *p) ;
-  virtual void visitADecl(ADecl *p) ;
   virtual void visitSExp(SExp *p) ;
   virtual void visitSDecls(SDecls *p) ;
   virtual void visitSInit(SInit *p) ;
@@ -60,11 +62,4 @@ public:
   virtual void visitType_double(Type_double *p) ;
   virtual void visitType_void(Type_void *p) ;
   virtual void visitTypeId(TypeId *p) ;
-  virtual void visitListDef(ListDef *p) ;
-  virtual void visitListField(ListField *p) ;
-  virtual void visitListArg(ListArg *p) ;
-  virtual void visitListStm(ListStm *p) ;
-  virtual void visitListExp(ListExp *p) ;
-  virtual void visitListId(ListId *p) ;
-  virtual void visitId(Id x) ;
 };

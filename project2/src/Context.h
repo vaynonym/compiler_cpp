@@ -6,14 +6,14 @@
 #include "Types.h"
 
 class Context {
-  std::vector<const BasicType *> types;
-  std::map<std::string, const BasicType *> basicSymbols;
-  std::map<std::string, FunctionType *> functionSymbols;
-
-  Context* parent;
-
   private:
+    std::vector<const BasicType *> types;
+    std::map<const std::string, const BasicType *> basicSymbols;
+    std::map<const std::string, const FunctionType *> functionSymbols;
+
     Context() {}
+    const BasicType *findSymbolInThis(const std::string& id);
+    const FunctionType *findFunctionInThis(const std::string& id);
 
   public:
     static const BasicType *TYPE_INT;
@@ -25,13 +25,19 @@ class Context {
     // context also deletes the basic primitive types.
     static Context* getDefaultContext();
 
+    Context* parent;
+
     ~Context();
 
-    void addSymbol(const std::string& id, const BasicType *type);
+    bool addSymbol(const std::string& id, const BasicType *type);
     const BasicType* findSymbol(const std::string& id);
 
-    void addTypeDeclaration(const std::string& id);
+    bool addTypeDeclaration(const std::string& id);
+    bool addStructDeclaration(const std::string& id, const std::map<const std::string, const BasicType *> members);
     const BasicType* findBasicType(const std::string& id);
+
+    bool addFunction(const std::string& id, const FunctionType *type);
+    const FunctionType* findFunction(const std::string& id);
 
     Context* createChildContext();
 };

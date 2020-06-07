@@ -1,3 +1,5 @@
+CXXFLAGS := -g -D_GLIBCXX_DEBUG
+
 SRC := $(wildcard src/*.cpp)
 OBJS := $(SRC:%.cpp=bin/%.o)
 
@@ -11,14 +13,14 @@ dirs:
 
 bin/src/%.o: src/%.cpp
 	@mkdir -p $(@D)
-	clang++-9 -c -O3 -Igen/ $< -o $@
+	clang++-9 $(CXXFLAGS) -c -Igen/ $< -o $@
 
 bin/gen/%.o: gen/%.C
 	@mkdir -p $(@D)
-	clang++-9 -c -O3 -Igen/ $< -o $@
+	clang++-9 $(CXXFLAGS) -c -Igen/ $< -o $@
 
 bin/compiler: $(GEN_OBJ) $(OBJS)
-	clang++-9 -g -static -O3 -o bin/compiler $^
+	clang++-9 $(CXXFLAGS) -o bin/compiler $^
 
 gen: CPP.cf
 	bnfc -cpp -o gen/ CPP.cf

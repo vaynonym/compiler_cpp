@@ -12,22 +12,56 @@ TypeCheckVisitor::~TypeCheckVisitor() {
   delete currentContext;
 }
 
-void TypeCheckVisitor::visitPDefs(PDefs *p) {
-  p->listdef_->accept(this);
+void TypeCheckVisitor::beginContext() {
+  currentContext = currentContext->createChildContext();
 }
 
-void TypeCheckVisitor::visitListDef(ListDef *p) {
-  for (auto def : *p) {
-      try {
-        def->accept(this);
-      } catch(TypeCheckingError &e) {
-        std::cout << e.printError() << std::endl;
-      }
+void TypeCheckVisitor::endContext() {
+  Context *oldContext = currentContext;
+  currentContext = currentContext->parent;
+  delete oldContext;
+}
+
+void TypeCheckVisitor::visitPDefs(PDefs *p) {
+  for (auto def : *p->listdef_) {
+    try {
+      def->accept(this);
+    } catch(TypeCheckingError &e) {
+      std::cout << e.printError() << std::endl;
+    }
   }
 }
 
 void TypeCheckVisitor::visitDFun(DFun *p) {
-  // TODO: Return types, arguments, child contexts, etc
+  beginContext();
+
+  std::vector<const BasicType *> argumentTypes;
+  for (auto arg : *p->listarg_) {
+    ADecl *adecl = (ADecl *) arg;
+
+    adecl->type_->accept(this);
+    const BasicType *argType = currentContext->findBasicType(currentTypeId);
+    if (argType == nullptr) {
+      std::cout << UnknownType(currentTypeId, "function argument").printError() << std::endl;
+      continue;
+    }
+
+    if (!currentContext->addSymbol(adecl->id_, argType)) {
+      std::cout << IdentifierAlreadyExists(adecl->id_).printError() << std::endl;
+      continue;
+    }
+
+    argumentTypes.push_back(argType);
+  }
+
+  p->type_->accept(this);
+  const BasicType *returnType = currentContext->findBasicType(currentTypeId);
+  if (returnType == nullptr) {
+    std::cout << UnknownType(currentTypeId, "function return type").printError() << std::endl;
+  }
+
+  this->returnType = returnType;
+
   for (auto stm : *p->liststm_) {
     try {
       stm->accept(this);
@@ -35,18 +69,39 @@ void TypeCheckVisitor::visitDFun(DFun *p) {
       std::cout << e.printError() << std::endl;
     }
   }
+
+  endContext();
+
+  if (returnType != nullptr) {
+    if (!currentContext->addFunction(p->id_, new FunctionType(returnType, argumentTypes))) {
+      throw IdentifierAlreadyExists(p->id_, "function declaration");
+    }
+  }
 }
 
 void TypeCheckVisitor::visitDStruct(DStruct *p) {
-  LOG_LINE;
-}
+  std::map<const std::string, const BasicType *> members;
 
-void TypeCheckVisitor::visitFDecl(FDecl *p) {
-  
-}
+  for (auto *field : *p->listfield_) {
+    FDecl *fdecl = (FDecl *) field;
 
-void TypeCheckVisitor::visitADecl(ADecl *p) {
-  
+    if (members.find(fdecl->id_) != members.end()) {
+      std::cout << IdentifierAlreadyExists(fdecl->id_).printError() << std::endl;
+      continue;
+    }
+
+    fdecl->type_->accept(this);
+    const BasicType *memberType = currentContext->findBasicType(currentTypeId);
+    if (memberType == nullptr) {
+      std::cout << UnknownType(currentTypeId, "struct member").printError() << std::endl;
+      continue;
+    }
+
+    members.emplace(fdecl->id_, memberType);
+  }
+
+  bool success = currentContext->addStructDeclaration(p->id_, members);
+  if (!success) throw TypeAlreadyExists(p->id_);
 }
 
 void TypeCheckVisitor::visitSExp(SExp *p) {
@@ -83,7 +138,7 @@ void TypeCheckVisitor::visitSInit(SInit *p) {
   p->exp_->accept(this);
 
   if (!resultExpType->isConvertibleTo(declType)) {
-    throw TypeMismatch(declType->Id, resultExpType->Id, "initialization");
+    throw TypeMismatch(declType->id, resultExpType->id, "initialization");
   }
 
   if(currentContext->findSymbol(p->id_) != nullptr){
@@ -93,11 +148,16 @@ void TypeCheckVisitor::visitSInit(SInit *p) {
 }
 
 void TypeCheckVisitor::visitSReturn(SReturn *p) {
-  
+  p->exp_->accept(this);
+  if (!resultExpType->isConvertibleTo(returnType)) {
+    throw TypeMismatch(returnType->id, resultExpType->id, "return type");
+  }
 }
 
 void TypeCheckVisitor::visitSReturnV(SReturnV *p) {
-  
+  if (!returnType->isConvertibleTo(Context::TYPE_VOID)) {
+    throw TypeMismatch(returnType->id, Context::TYPE_VOID->id, "return type");
+  }
 }
 
 void TypeCheckVisitor::visitSWhile(SWhile *p) {
@@ -105,12 +165,11 @@ void TypeCheckVisitor::visitSWhile(SWhile *p) {
 }
 
 void TypeCheckVisitor::visitSDoWhile(SDoWhile *p) {
-
   p->stm_->accept(this);
 
   p->exp_->accept(this);
   if(resultExpType != Context::TYPE_BOOL){
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "Do while statement, condition expression");
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id, "Do while statement, condition expression");
   }
 }
 
@@ -119,7 +178,7 @@ void TypeCheckVisitor::visitSFor(SFor *p) {
 
   p->exp_2->accept(this);
   if(resultExpType != Context::TYPE_BOOL){
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "second expression of for statement");
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id, "second expression of for statement");
   }
 
   p->exp_3->accept(this);
@@ -128,17 +187,26 @@ void TypeCheckVisitor::visitSFor(SFor *p) {
 }
 
 void TypeCheckVisitor::visitSBlock(SBlock *p) {
-  
+  beginContext();
+
+  for (auto stm : *p->liststm_) {
+    try {
+      stm->accept(this);
+    } catch (TypeCheckingError &e) {
+      std::cout << e.printError() << std::endl;
+    }
+  }
+
+  endContext();
 }
 
 void TypeCheckVisitor::visitSIfElse(SIfElse *p) {
   p->exp_->accept(this);
   if(resultExpType != Context::TYPE_BOOL){
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "IfElse statement, conditional expression");
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id, "IfElse statement, conditional expression");
   }
   p->stm_1->accept(this);
   p->stm_2->accept(this);
-   
 }
 
 void TypeCheckVisitor::visitETrue(ETrue *p) {
@@ -167,52 +235,88 @@ void TypeCheckVisitor::visitEId(EId *p) {
 }
 
 void TypeCheckVisitor::visitEApp(EApp *p) {
-  
+  const FunctionType *function = currentContext->findFunction(p->id_);
+  if (function == nullptr) {
+    throw UnknownIdentifier(p->id_);
+  }
+
+  bool hasError = function->parameters.size() != p->listexp_->size();
+  std::string actualSig = p->id_ + "(";
+  for (size_t i = 0; i < p->listexp_->size(); i++) {
+    (*p->listexp_)[i]->accept(this);
+
+    if (i < function->parameters.size()) {
+      hasError |= !resultExpType->isConvertibleTo(function->parameters[i]);
+    }
+
+    actualSig += resultExpType->id;
+    if (i != p->listexp_->size() - 1)
+      actualSig += ", ";
+  }
+  actualSig += ")";
+
+  if (hasError) {
+    std::string functionSig = p->id_ + "(";
+    for (size_t j = 0; j < function->parameters.size(); j++) {
+      functionSig += function->parameters[j]->id;
+      if (j != function->parameters.size() - 1)
+        functionSig += ", ";
+    }
+    functionSig += ")";
+
+    throw FunctionSignatureMismatch(functionSig, actualSig, p->id_);
+  }
+
+  resultExpType = function->returnType;
 }
 
 void TypeCheckVisitor::visitEProj(EProj *p) {
-  
+  p->exp_->accept(this);
+
+  const BasicType *memberType = resultExpType->getMember(p->id_);
+  if (memberType == nullptr) throw UnknownIdentifier(p->id_, "struct member");
+
+  resultExpType = memberType;
 }
 
 void TypeCheckVisitor::visitEPIncr(EPIncr *p) {
- p->exp_->accept(this);
-  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
-  }
- 
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
 } 
 
 void TypeCheckVisitor::visitEPDecr(EPDecr *p) {
   p->exp_->accept(this);
-  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
-  }
- }
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
+}
 
 void TypeCheckVisitor::visitEIncr(EIncr *p) {
   p->exp_->accept(this);
-  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
-  }
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
 }
 
 void TypeCheckVisitor::visitEDecr(EDecr *p) {
   p->exp_->accept(this);
-  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
-  }
- }
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
+}
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "multiplication");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "multiplication");
   }
   const BasicType *firstType = resultExpType; 
 
   p->exp_2->accept(this);
   if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "multiplication");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "multiplication");
   }
 
   if(resultExpType->isConvertibleTo(firstType)) {
@@ -223,13 +327,13 @@ void TypeCheckVisitor::visitETimes(ETimes *p) {
 void TypeCheckVisitor::visitEDiv(EDiv *p) {
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "division");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "division");
   }
   const BasicType *firstType = resultExpType; 
 
   p->exp_2->accept(this);
   if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, "division");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "division");
   }
 
   if(firstType==Context::TYPE_INT&&resultExpType==Context::TYPE_INT){
@@ -243,14 +347,14 @@ void TypeCheckVisitor::visitEDiv(EDiv *p) {
 void TypeCheckVisitor::visitEPlus(EPlus *p) {
   p->exp_1->accept(this);
   if(!(resultExpType == Context::TYPE_DOUBLE || resultExpType == Context::TYPE_INT)){
-    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Addition, first operand");
+    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Addition, first operand");
   }
 
   const BasicType* firstresultExpType = resultExpType;
 
   p->exp_2->accept(this);
   if(!(resultExpType == Context::TYPE_DOUBLE || resultExpType == Context::TYPE_INT)){
-    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Addition, second operand");
+    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Addition, second operand");
   }
   // in this simple grammar (only int and double as numeric types) this checks for 'int + double' and 'double + int', in both cases we have
   // to convert int to double 
@@ -267,12 +371,12 @@ void TypeCheckVisitor::visitEMinus(EMinus *p) {
 void TypeCheckVisitor::visitETwc(ETwc *p) {
   p->exp_1->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 
   p->exp_2->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 
   resultExpType = Context::TYPE_INT;
@@ -282,12 +386,12 @@ void TypeCheckVisitor::visitELt(ELt *p) {
 
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Less than operator, first operand");
+    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, first operand");
   }
 
   p->exp_2->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + "or" + Context::TYPE_DOUBLE->Id, resultExpType->Id, "Less than operator, second operand");
+    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, second operand");
   }
 
   resultExpType = Context::TYPE_BOOL;
@@ -300,13 +404,13 @@ void TypeCheckVisitor::visitEGt(EGt *p) {
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " <=");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " <=");
   }
   const BasicType *firstType = resultExpType; 
 
   p->exp_2->accept(this);
   if( ! resultExpType->isConvertibleTo(firstType) && ! firstType->isConvertibleTo(resultExpType)){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " <=");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " <=");
   }
   
   resultExpType = Context::TYPE_BOOL;
@@ -315,11 +419,11 @@ void TypeCheckVisitor::visitELtEq(ELtEq *p) {
 void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " >=");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " >=");
   }
   p->exp_2->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->Id + " or " + Context::TYPE_DOUBLE->Id, resultExpType->Id, " >=");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " >=");
   }
   
   resultExpType = Context::TYPE_BOOL;
@@ -327,28 +431,26 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
 }
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
-    
     p->exp_1->accept(this);
     const BasicType *expectedType = resultExpType;
 
     p->exp_2->accept(this);
     
     if(! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-      throw TypeMismatch(expectedType->Id, resultExpType->Id, "== operand");
+      throw TypeMismatch(expectedType->id, resultExpType->id, "== operand");
     }
 
     resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
-    
     p->exp_1->accept(this);
     const BasicType *expectedType = resultExpType;
 
     p->exp_2->accept(this);
     
     if( ! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-      throw TypeMismatch(expectedType->Id, resultExpType->Id, "!= operand");
+      throw TypeMismatch(expectedType->id, resultExpType->id, "!= operand");
     }
 
     resultExpType = Context::TYPE_BOOL;
@@ -357,12 +459,12 @@ void TypeCheckVisitor::visitENEq(ENEq *p) {
 void TypeCheckVisitor::visitEAnd(EAnd *p) {
   p->exp_1->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id);
   }
 
   p->exp_2->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id);
   }
 
   resultExpType = Context::TYPE_BOOL;
@@ -371,26 +473,25 @@ void TypeCheckVisitor::visitEAnd(EAnd *p) {
 void TypeCheckVisitor::visitEOr(EOr *p) {
   p->exp_1->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id);
   }
 
   p->exp_2->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id);
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id);
   }
 
   resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEAss(EAss *p) {
-
   p->exp_1->accept(this);
   const BasicType *firstresultExpType = resultExpType;
   
   p->exp_2->accept(this);
   // checks if right hand side is convertible to type of left hand side
   if (!resultExpType->isConvertibleTo(firstresultExpType)) {
-    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "= operator");
+    throw TypeMismatch(firstresultExpType->id, resultExpType->id, "= operator");
   }
   // sets resultExpType back to type of left hand side
   resultExpType = firstresultExpType;
@@ -399,7 +500,7 @@ void TypeCheckVisitor::visitEAss(EAss *p) {
 void TypeCheckVisitor::visitECond(ECond *p) {
   p->exp_1->accept(this);
   if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
-    throw TypeMismatch(Context::TYPE_BOOL->Id, resultExpType->Id, "condition in the ternary operator");
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id, "condition in the ternary operator");
   } 
 
   p->exp_2->accept(this);
@@ -408,7 +509,7 @@ void TypeCheckVisitor::visitECond(ECond *p) {
 
   p->exp_3->accept(this);
   if (resultExpType != firstresultExpType){
-    throw TypeMismatch(firstresultExpType->Id, resultExpType->Id, "second and third operand");
+    throw TypeMismatch(firstresultExpType->id, resultExpType->id, "second and third operand");
   }
 }
 
@@ -430,29 +531,4 @@ void TypeCheckVisitor::visitType_void(Type_void *p) {
 
 void TypeCheckVisitor::visitTypeId(TypeId *p) {
   currentTypeId = p->id_;
-}
-
-
-void TypeCheckVisitor::visitListField(ListField *p) {
-  
-}
-
-void TypeCheckVisitor::visitListArg(ListArg *p) {
-  
-}
-
-void TypeCheckVisitor::visitListStm(ListStm *p) {
-  
-}
-
-void TypeCheckVisitor::visitListExp(ListExp *p) {
-  
-}
-
-void TypeCheckVisitor::visitListId(ListId *p) {
-  
-}
-
-void TypeCheckVisitor::visitId(Id x) {
-  
 }

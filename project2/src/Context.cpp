@@ -20,13 +20,11 @@ Context* Context::getDefaultContext() {
   return c;
 }
 
-void Context::addSymbol(const std::string& id, const BasicType *type) {
-  if (basicSymbols.find(id) != basicSymbols.end()) {
-    // TODO: Error reporting
-    return;
-  }
+bool Context::addSymbol(const std::string& id, const BasicType *type) {
+  if (findSymbolInThis(id) != nullptr) return false;
 
   basicSymbols.emplace(id, type);
+  return true;
 }
 
 const BasicType* Context::findSymbol(const std::string& id) {
@@ -40,20 +38,62 @@ const BasicType* Context::findSymbol(const std::string& id) {
   return (*res).second;
 }
 
-void Context::addTypeDeclaration(const std::string& id) {
-  // TODO: check if exists
+const BasicType *Context::findSymbolInThis(const std::string& id) {
+  auto res = basicSymbols.find(id);
+  if (res == basicSymbols.end()) {
+    return nullptr;
+  }
+
+  return (*res).second;
+}
+
+bool Context::addTypeDeclaration(const std::string& id) {
+  if (findBasicType(id) != nullptr) return false;
+
   types.push_back(new BasicType(id));
+  return true;
+}
+
+bool Context::addStructDeclaration(const std::string& id, const std::map<const std::string, const BasicType *> members) {
+  if (findBasicType(id) != nullptr) return false;
+
+  types.push_back(new StructType(id, members));
+  return true;
 }
 
 const BasicType* Context::findBasicType(const std::string& id) {
   for (auto type : types) {
-    if (type->Id == id) {
+    if (type->id == id) {
       return type;
     }
   }
 
   if (parent == nullptr) return nullptr;
   return parent->findBasicType(id);
+}
+
+
+bool Context::addFunction(const std::string& id, const FunctionType *type) {
+  if (findFunctionInThis(id) != nullptr) return false;
+
+  functionSymbols.emplace(id, type);
+  return true;
+}
+
+const FunctionType* Context::findFunction(const std::string& id) {
+  auto res = functionSymbols.find(id);
+  if (res == functionSymbols.end()) {
+    if (parent == nullptr) return nullptr;
+    return parent->findFunction(id);
+  }
+
+  return (*res).second;
+}
+
+const FunctionType *Context::findFunctionInThis(const std::string& id) {
+  auto res = functionSymbols.find(id);
+  if (res == functionSymbols.end()) return nullptr;
+  return (*res).second;
 }
 
 Context* Context::createChildContext() {
