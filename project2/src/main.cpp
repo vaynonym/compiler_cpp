@@ -10,6 +10,9 @@ void typecheck(Program *pgm) {
 
 	if (!visitor.anyErrors) {
 		std::cout << "OK" << std::endl;
+		exit(0);
+	} else {
+		exit(1);
 	}
 }
 
@@ -41,6 +44,5 @@ int main(int argc, char ** argv) {
 	} else
 		input = stdin;
 	process(input);
-	return 0;
 }
 
