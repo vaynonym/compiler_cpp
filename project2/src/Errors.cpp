@@ -34,8 +34,8 @@ FunctionSignatureMismatch::~FunctionSignatureMismatch() {}
 
 string FunctionSignatureMismatch::printError(){
     
-    string errorString = "Expected signature" + expectedSignature + "for function" + functionIdentifier + "\n"
-                  + "but got signature" + expectedSignature + "\n";
+    string errorString = "Expected signature " + expectedSignature + " for function" + functionIdentifier + "\n"
+                  + "but got signature " + expectedSignature + "\n";
 
     if(additionalInformation != "")
         errorString += "Look toward " + additionalInformation + "\n";
@@ -53,7 +53,7 @@ UnknownType::~UnknownType() {}
 
 string UnknownType::printError(){
     
-    string errorString = "Type " + unknownType + "is unknown.\n" +
+    string errorString = "Type " + unknownType + " is unknown.\n" +
                          "As are many things in life.\n" +
                          "Keep seeking.\n";
 
@@ -96,7 +96,7 @@ UnknownIdentifier::~UnknownIdentifier() {}
 
 string UnknownIdentifier::printError() {
     
-    string errorString = "Identifier " + unknownIdentifier + "is unknown.\n" +
+    string errorString = "Identifier " + unknownIdentifier + " is unknown.\n" +
                          "While your wildest fantasies run rampant,\n" +
                          "Do not forget the ground you stand on.\n";
 
