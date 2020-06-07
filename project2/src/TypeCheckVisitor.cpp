@@ -165,7 +165,12 @@ void TypeCheckVisitor::visitSReturnV(SReturnV *p) {
 }
 
 void TypeCheckVisitor::visitSWhile(SWhile *p) {
-  
+  p->exp_->accept(this);
+  if (!resultExpType->isConvertibleTo(Context::TYPE_BOOL)) {
+    throw TypeMismatch(Context::TYPE_BOOL->id, resultExpType->id, "while condition");
+  }
+
+  p->stm_->accept(this);
 }
 
 void TypeCheckVisitor::visitSDoWhile(SDoWhile *p) {
@@ -365,7 +370,21 @@ void TypeCheckVisitor::visitEPlus(EPlus *p) {
 }
 
 void TypeCheckVisitor::visitEMinus(EMinus *p) {
-  
+  p->exp_1->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "-");
+  }
+  const BasicType *first = resultExpType;
+
+  p->exp_2->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "-");
+  }
+  const BasicType *second = resultExpType;
+
+  bool anyDouble = first == Context::TYPE_DOUBLE || second == Context::TYPE_DOUBLE;
+
+  resultExpType = anyDouble ? Context::TYPE_DOUBLE : Context::TYPE_INT;
 }
 
 void TypeCheckVisitor::visitETwc(ETwc *p) {
@@ -386,19 +405,29 @@ void TypeCheckVisitor::visitELt(ELt *p) {
 
   p->exp_1->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, first operand");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, first operand");
   }
 
   p->exp_2->accept(this);
   if(resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE){
-    throw TypeMismatch(Context::TYPE_INT->id + "or" + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, second operand");
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, "Less than operator, second operand");
   }
 
   resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitEGt(EGt *p) {
-  
+  p->exp_1->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " >=");
+  }
+
+  p->exp_2->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id, " >=");
+  }
+
+  resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
