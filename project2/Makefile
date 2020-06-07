@@ -22,8 +22,8 @@ bin/gen/%.o: gen/%.C
 bin/compiler: $(GEN_OBJ) $(OBJS)
 	clang++-9 $(CXXFLAGS) -o bin/compiler $^
 
-gen: CPP.cf
-	bnfc -cpp -o gen/ CPP.cf
+gen: src/CPP.cf
+	bnfc -cpp -o gen/ src/CPP.cf
 	rm -f gen/Test.C
 	cd gen/; flex CPP.l
 	cd gen/; yacc CPP.y
@@ -35,3 +35,4 @@ gen: CPP.cf
 clean:
 	rm -rf bin/
 	rm -rf gen/
+	rm -rf domjudge/
