@@ -1,8 +1,24 @@
-#include "Absyn.H"
+#pragma once
 
-class EmptyVisitor : public Visitor {
+#include "Absyn.H"
+#include "Context.h"
+#include "Errors.h"
+
+class BasicVisitor : public Visitor {
+protected:
+  Context *currentContext;
+  std::string currentTypeId;
+
+  void beginContext();
+  void endContext();
+
+  void handleError(const TypeCheckingError &e);
+  void tryVisit(Visitable *v);
+
 public:
-  virtual ~EmptyVisitor() {}
+  bool anyErrors;
+
+  virtual ~BasicVisitor() {}
   virtual void visitProgram(Program *p);
   virtual void visitDef(Def *p);
   virtual void visitField(Field *p);

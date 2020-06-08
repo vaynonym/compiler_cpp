@@ -3,17 +3,25 @@
 #include "Parser.H"
 #include "Absyn.H"
 #include "TypeCheckVisitor.h"
+#include "ContextBuilder.h"
 
 void typecheck(Program *pgm) {
-	TypeCheckVisitor visitor;
-	pgm->accept(&visitor);
+	ContextBuilder contextBuilder;
+	pgm->accept(&contextBuilder);
 
-	if (!visitor.anyErrors) {
-		std::cout << "OK" << std::endl;
-		exit(0);
-	} else {
+	if (contextBuilder.anyErrors) {
 		exit(1);
 	}
+
+	TypeCheckVisitor typeChecker(contextBuilder.getGlobalContext());
+	pgm->accept(&typeChecker);
+
+	if (typeChecker.anyErrors) {
+		exit(1);
+	}
+
+	std::cout << "OK" << std::endl;
+	exit(0);
 }
 
 void process(FILE* input) {

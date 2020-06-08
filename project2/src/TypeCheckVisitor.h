@@ -1,35 +1,25 @@
 #pragma once
 
 #include <memory>
-#include "EmptyVisitor.h"
+#include "BasicVisitor.h"
 #include "Context.h"
 #include "Errors.h"
 
-class TypeCheckVisitor : public EmptyVisitor
+class TypeCheckVisitor : public BasicVisitor
 {
 private:
-  Context *currentContext;
-  std::string currentTypeId;
   const BasicType *resultExpType;
   const BasicType *returnType;
 
-  void beginContext();
-  void endContext();
-
-  void handleError(const TypeCheckingError &e);
-  void tryVisit(Visitable *v);
 public:
-  TypeCheckVisitor();
+  // Takes ownership of the context.
+  TypeCheckVisitor(Context *context);
   virtual ~TypeCheckVisitor();
-
-  bool anyErrors;
 
   virtual void visitPDefs(PDefs *p) ;
   virtual void visitDFun(DFun *p) ;
-  virtual void visitDStruct(DStruct *p) ;
   virtual void visitSExp(SExp *p) ;
   virtual void visitSDecls(SDecls *p) ;
- // virtual void visitSInit(SInit *p) ;
   virtual void visitSReturn(SReturn *p) ;
   virtual void visitSReturnV(SReturnV *p) ;
   virtual void visitSWhile(SWhile *p) ;
@@ -67,9 +57,4 @@ public:
   virtual void visitEOr(EOr *p) ;
   virtual void visitEAss(EAss *p) ;
   virtual void visitECond(ECond *p) ;
-  virtual void visitType_bool(Type_bool *p) ;
-  virtual void visitType_int(Type_int *p) ;
-  virtual void visitType_double(Type_double *p) ;
-  virtual void visitType_void(Type_void *p) ;
-  virtual void visitTypeId(TypeId *p) ;
 };

@@ -4,36 +4,13 @@
 
 #define LOG_LINE std::cout << "Line " << __LINE__ << std::endl;
 
-TypeCheckVisitor::TypeCheckVisitor() {
-  currentContext = Context::getDefaultContext();
+TypeCheckVisitor::TypeCheckVisitor(Context *context) {
+  currentContext = context;
   anyErrors = false;
 }
 
 TypeCheckVisitor::~TypeCheckVisitor() {
   delete currentContext;
-}
-
-void TypeCheckVisitor::beginContext() {
-  currentContext = currentContext->createChildContext();
-}
-
-void TypeCheckVisitor::endContext() {
-  Context *oldContext = currentContext;
-  currentContext = currentContext->parent;
-  delete oldContext;
-}
-
-void TypeCheckVisitor::handleError(const TypeCheckingError &e) {
-  std::cout << "TYPE ERROR" << std::endl << e.printError() << std::endl << std::endl;
-  anyErrors = true;
-}
-
-void TypeCheckVisitor::tryVisit(Visitable *v) {
-  try {
-    v->accept(this);
-  } catch (const TypeCheckingError &e) {
-    handleError(e);
-  }
 }
 
 void TypeCheckVisitor::visitPDefs(PDefs *p) {
@@ -45,30 +22,24 @@ void TypeCheckVisitor::visitPDefs(PDefs *p) {
 void TypeCheckVisitor::visitDFun(DFun *p) {
   beginContext();
 
-  std::vector<const BasicType *> argumentTypes;
+  // Function type is already in global context, and existence of all types
+  // was checked. We just need to build up the context for the statements
+  // inside the function.
+
   for (auto arg : *p->listarg_) {
     ADecl *adecl = (ADecl *) arg;
 
     adecl->type_->accept(this);
     const BasicType *argType = currentContext->findBasicType(currentTypeId);
-    if (argType == nullptr) {
-      handleError(UnknownType(currentTypeId, "function argument"));
-      continue;
-    }
 
     if (!currentContext->addSymbol(adecl->id_, argType)) {
       handleError(IdentifierAlreadyExists(adecl->id_));
       continue;
     }
-
-    argumentTypes.push_back(argType);
   }
 
   p->type_->accept(this);
   const BasicType *returnType = currentContext->findBasicType(currentTypeId);
-  if (returnType == nullptr) {
-    handleError(UnknownType(currentTypeId, "function return type"));
-  }
 
   this->returnType = returnType;
 
@@ -77,37 +48,6 @@ void TypeCheckVisitor::visitDFun(DFun *p) {
   }
 
   endContext();
-
-  if (returnType != nullptr) {
-    if (!currentContext->addFunction(p->id_, new FunctionType(returnType, argumentTypes))) {
-      throw IdentifierAlreadyExists(p->id_, "function declaration");
-    }
-  }
-}
-
-void TypeCheckVisitor::visitDStruct(DStruct *p) {
-  std::map<const std::string, const BasicType *> members;
-
-  for (auto *field : *p->listfield_) {
-    FDecl *fdecl = (FDecl *) field;
-
-    if (members.find(fdecl->id_) != members.end()) {
-      handleError(IdentifierAlreadyExists(fdecl->id_));
-      continue;
-    }
-
-    fdecl->type_->accept(this);
-    const BasicType *memberType = currentContext->findBasicType(currentTypeId);
-    if (memberType == nullptr) {
-      handleError(UnknownType(currentTypeId, "struct member"));
-      continue;
-    }
-
-    members.emplace(fdecl->id_, memberType);
-  }
-
-  bool success = currentContext->addStructDeclaration(p->id_, members);
-  if (!success) throw TypeAlreadyExists(p->id_);
 }
 
 void TypeCheckVisitor::visitSExp(SExp *p) {
@@ -553,24 +493,4 @@ void TypeCheckVisitor::visitECond(ECond *p) {
   if (resultExpType != firstresultExpType){
     throw TypeMismatch(firstresultExpType->id, resultExpType->id, "second and third operand");
   }
-}
-
-void TypeCheckVisitor::visitType_bool(Type_bool *p) {
-  currentTypeId = "bool";
-}
-
-void TypeCheckVisitor::visitType_int(Type_int *p) {
-  currentTypeId = "int";
-}
-
-void TypeCheckVisitor::visitType_double(Type_double *p) {
-  currentTypeId = "double";
-}
-
-void TypeCheckVisitor::visitType_void(Type_void *p) {
-  currentTypeId = "void";
-}
-
-void TypeCheckVisitor::visitTypeId(TypeId *p) {
-  currentTypeId = p->id_;
 }
