@@ -29,7 +29,7 @@ public:
   virtual void visitDStruct(DStruct *p) ;
   virtual void visitSExp(SExp *p) ;
   virtual void visitSDecls(SDecls *p) ;
-  virtual void visitSInit(SInit *p) ;
+ // virtual void visitSInit(SInit *p) ;
   virtual void visitSReturn(SReturn *p) ;
   virtual void visitSReturnV(SReturnV *p) ;
   virtual void visitSWhile(SWhile *p) ;
@@ -37,6 +37,8 @@ public:
   virtual void visitSFor(SFor *p) ;
   virtual void visitSBlock(SBlock *p) ;
   virtual void visitSIfElse(SIfElse *p) ;
+  virtual void visitIdNoInit(IdNoInit *p);
+  virtual void visitIdInit(IdInit *p);
   virtual void visitETrue(ETrue *p) ;
   virtual void visitEFalse(EFalse *p) ;
   virtual void visitEInt(EInt *p) ;
@@ -48,6 +50,8 @@ public:
   virtual void visitEPDecr(EPDecr *p) ;
   virtual void visitEIncr(EIncr *p) ;
   virtual void visitEDecr(EDecr *p) ;
+  virtual void visitEUPlus(EUPlus *p);
+  virtual void visitEUMinus(EUMinus *p);
   virtual void visitETimes(ETimes *p) ;
   virtual void visitEDiv(EDiv *p) ;
   virtual void visitEPlus(EPlus *p) ;

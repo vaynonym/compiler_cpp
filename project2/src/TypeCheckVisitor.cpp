@@ -123,7 +123,7 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
     return;
   }
   
-  for (Id id : *(p->listid_)){
+  for (IdIn id : *(p->listidin_)){
     if(currentContext->findSymbol(id) != nullptr){
       throw IdentifierAlreadyExists(id);
     }
@@ -131,7 +131,7 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
   }
 
 }
-
+/*
 void TypeCheckVisitor::visitSInit(SInit *p) {
   p->type_->accept(this);
   const BasicType *declType = currentContext->findBasicType(currentTypeId);
@@ -152,7 +152,7 @@ void TypeCheckVisitor::visitSInit(SInit *p) {
   }
   currentContext->addSymbol(p->id_, declType);
 }
-
+*/
 void TypeCheckVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
   if (!resultExpType->isConvertibleTo(returnType)) {
@@ -214,6 +214,12 @@ void TypeCheckVisitor::visitSIfElse(SIfElse *p) {
   }
   p->stm_1->accept(this);
   p->stm_2->accept(this);
+}
+void TypeCheckVisitor::visitIdNoInit(IdNoInit *p){
+
+}
+void TypeCheckVisitor::visitIdInit(IdInit *p){
+  
 }
 
 void TypeCheckVisitor::visitETrue(ETrue *p) {
@@ -313,6 +319,20 @@ void TypeCheckVisitor::visitEDecr(EDecr *p) {
     throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 }
+
+void TypeCheckVisitor::visitEUPlus(EUPlus *p) {
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
+}
+void TypeCheckVisitor::visitEUMinus(EUMinus *p) {
+  p->exp_->accept(this);
+  if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+  }
+}
+
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
   p->exp_1->accept(this);

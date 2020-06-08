@@ -14,8 +14,7 @@ ADecl.   Arg    ::= Type Id ;
 separator Arg "," ;
 
 SExp.    Stm    ::= Exp ";" ;
-SDecls.  Stm    ::= Type [Id] ";" ;
-SInit.   Stm    ::= Type Id "=" Exp ";" ;
+SDecls.  Stm    ::= Type [IdIn] ";" ;
 SReturn. Stm    ::= "return" Exp ";" ;
 SReturnV.Stm    ::= "return" ";" ;
 SWhile.  Stm    ::= "while" "(" Exp ")" Stm ;
@@ -25,6 +24,11 @@ SBlock.  Stm    ::= "{" [Stm] "}" ;
 SIfElse. Stm    ::= "if" "(" Exp ")" Stm "else" Stm ;
 
 terminator Stm "" ;
+
+IdNoInit.   IdIn    ::= Id ;
+IdInit.     IdIn    ::= Id "=" Exp ;
+
+separator nonempty IdIn "," ;
 
 ETrue.   Exp15  ::= "true" ;
 EFalse.  Exp15  ::= "false" ;
@@ -41,6 +45,8 @@ EPDecr.  Exp14  ::= Exp14 "--" ;
 
 EIncr.   Exp13  ::= "++" Exp13 ;
 EDecr.   Exp13  ::= "--" Exp13 ;
+EUPlus.  Exp13  ::= "+" Exp13 ;
+EUMinus. Exp13  ::= "-" Exp13 ;
 
 ETimes.  Exp12  ::= Exp12 "*"   Exp13 ;
 EDiv.    Exp12  ::= Exp12 "/"   Exp13 ;

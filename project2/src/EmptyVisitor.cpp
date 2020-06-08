@@ -57,9 +57,9 @@ void EmptyVisitor::visitSDecls(SDecls *p) {
     
 }
 
-void EmptyVisitor::visitSInit(SInit *p) {
+//void EmptyVisitor::visitSInit(SInit *p) {
     
-}
+//}
 
 void EmptyVisitor::visitSReturn(SReturn *p) {
     
@@ -87,6 +87,12 @@ void EmptyVisitor::visitSBlock(SBlock *p) {
 
 void EmptyVisitor::visitSIfElse(SIfElse *p) {
     
+}
+void EmptyVisitor::visitIdNoInit(IdNoInit *p){
+
+}
+void EmptyVisitor::visitIdInit(IdInit *p){
+
 }
 
 void EmptyVisitor::visitETrue(ETrue *p) {
@@ -131,6 +137,12 @@ void EmptyVisitor::visitEIncr(EIncr *p) {
 
 void EmptyVisitor::visitEDecr(EDecr *p) {
     
+}
+void EmptyVisitor::visitEUPlus(EUPlus *p){
+
+}
+void EmptyVisitor::visitEUMinus(EUMinus *p){
+
 }
 
 void EmptyVisitor::visitETimes(ETimes *p) {
