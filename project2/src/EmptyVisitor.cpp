@@ -21,6 +21,10 @@ void EmptyVisitor::visitStm(Stm *p) {
     
 }
 
+void EmptyVisitor::visitIdIn(IdIn *p) {
+
+}
+
 void EmptyVisitor::visitExp(Exp *p) {
     
 }
@@ -57,10 +61,6 @@ void EmptyVisitor::visitSDecls(SDecls *p) {
     
 }
 
-//void EmptyVisitor::visitSInit(SInit *p) {
-    
-//}
-
 void EmptyVisitor::visitSReturn(SReturn *p) {
     
 }
@@ -88,9 +88,11 @@ void EmptyVisitor::visitSBlock(SBlock *p) {
 void EmptyVisitor::visitSIfElse(SIfElse *p) {
     
 }
+
 void EmptyVisitor::visitIdNoInit(IdNoInit *p){
 
 }
+
 void EmptyVisitor::visitIdInit(IdInit *p){
 
 }
@@ -239,6 +241,10 @@ void EmptyVisitor::visitListArg(ListArg *p) {
 
 void EmptyVisitor::visitListStm(ListStm *p) {
     
+}
+
+void EmptyVisitor::visitListIdIn(ListIdIn *p) {
+
 }
 
 void EmptyVisitor::visitListExp(ListExp *p) {

@@ -8,6 +8,7 @@ public:
   virtual void visitField(Field *p);
   virtual void visitArg(Arg *p);
   virtual void visitStm(Stm *p);
+  virtual void visitIdIn(IdIn *p);
   virtual void visitExp(Exp *p);
   virtual void visitType(Type *p);
   virtual void visitPDefs(PDefs *p);
@@ -17,7 +18,6 @@ public:
   virtual void visitADecl(ADecl *p);
   virtual void visitSExp(SExp *p);
   virtual void visitSDecls(SDecls *p);
-  //virtual void visitSInit(SInit *p);
   virtual void visitSReturn(SReturn *p);
   virtual void visitSReturnV(SReturnV *p);
   virtual void visitSWhile(SWhile *p);
@@ -64,6 +64,7 @@ public:
   virtual void visitListField(ListField *p);
   virtual void visitListArg(ListArg *p);
   virtual void visitListStm(ListStm *p);
+  virtual void visitListIdIn(ListIdIn *p);
   virtual void visitListExp(ListExp *p);
   virtual void visitListId(ListId *p);
 

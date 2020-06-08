@@ -35,4 +35,3 @@ gen: src/CPP.cf
 clean:
 	rm -rf bin/
 	rm -rf gen/
-	rm -rf domjudge/

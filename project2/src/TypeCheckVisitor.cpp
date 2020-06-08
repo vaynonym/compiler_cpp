@@ -123,36 +123,27 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
     return;
   }
   
-  for (IdIn id : *(p->listidin_)){
+  for (auto idOrInit : *p->listidin_){
+    IdInit *init = dynamic_cast<IdInit *>(idOrInit);
+    IdNoInit *noInit = dynamic_cast<IdNoInit *>(idOrInit);
+
+    std::string id = init != nullptr ? init->id_ : noInit->id_;
+
     if(currentContext->findSymbol(id) != nullptr){
       throw IdentifierAlreadyExists(id);
     }
+
+    if (init != nullptr) {
+      init->exp_->accept(this);
+      if (!resultExpType->isConvertibleTo(declType)) {
+        throw TypeMismatch(declType->id, resultExpType->id, "variable initialiser");
+      }
+    }
+
     currentContext->addSymbol(id, declType);
   }
-
 }
-/*
-void TypeCheckVisitor::visitSInit(SInit *p) {
-  p->type_->accept(this);
-  const BasicType *declType = currentContext->findBasicType(currentTypeId);
 
-  if (declType == nullptr) {
-    throw UnknownType(currentTypeId);
-    return;
-  }
-
-  p->exp_->accept(this);
-
-  if (!resultExpType->isConvertibleTo(declType)) {
-    throw TypeMismatch(declType->id, resultExpType->id, "initialization");
-  }
-
-  if(currentContext->findSymbol(p->id_) != nullptr){
-    throw IdentifierAlreadyExists(p->id_);
-  }
-  currentContext->addSymbol(p->id_, declType);
-}
-*/
 void TypeCheckVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
   if (!resultExpType->isConvertibleTo(returnType)) {
@@ -326,13 +317,13 @@ void TypeCheckVisitor::visitEUPlus(EUPlus *p) {
     throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 }
+
 void TypeCheckVisitor::visitEUMinus(EUMinus *p) {
   p->exp_->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
     throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 }
-
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
   p->exp_1->accept(this);
