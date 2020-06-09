@@ -412,26 +412,14 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
   p->exp_1->accept(this);
-  const BasicType *expectedType = resultExpType;
-
   p->exp_2->accept(this);
-  
-  if(! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-    throw TypeMismatch(expectedType->id, resultExpType->id, "== operand");
-  }
 
   resultExpType = Context::TYPE_BOOL;
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
   p->exp_1->accept(this);
-  const BasicType *expectedType = resultExpType;
-
   p->exp_2->accept(this);
-  
-  if( ! resultExpType->isConvertibleTo(expectedType) && ! expectedType->isConvertibleTo(resultExpType)) {
-    throw TypeMismatch(expectedType->id, resultExpType->id, "!= operand");
-  }
 
   resultExpType = Context::TYPE_BOOL;
 }
