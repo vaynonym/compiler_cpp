@@ -3,6 +3,7 @@
 
 ContextBuilder::ContextBuilder() {
   currentContext = Context::getDefaultContext();
+  anyErrors = false;
 }
 
 Context *ContextBuilder::getGlobalContext() {
@@ -37,8 +38,7 @@ void ContextBuilder::visitDFun(DFun *p) {
   if (returnType == nullptr) {
     handleError(UnknownType(currentTypeId, "function return type"));
   }
-
-  if (returnType != nullptr) {
+  else {
     if (!currentContext->addFunction(p->id_, new FunctionType(returnType, argumentTypes))) {
       throw IdentifierAlreadyExists(p->id_, "function declaration");
     }
