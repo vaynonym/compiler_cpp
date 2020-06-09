@@ -69,10 +69,6 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
 
     std::string id = init != nullptr ? init->id_ : noInit->id_;
 
-    if(currentContext->findSymbol(id) != nullptr){
-      throw IdentifierAlreadyExists(id);
-    }
-
     if (init != nullptr) {
       init->exp_->accept(this);
       if (!resultExpType->isConvertibleTo(declType)) {
@@ -80,7 +76,9 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
       }
     }
 
-    currentContext->addSymbol(id, declType);
+    if (!currentContext->addSymbol(id, declType)) {
+      throw IdentifierAlreadyExists(id);
+    }
   }
 }
 

@@ -5,7 +5,12 @@ double add(int a, int b) {
 int main() {
 	int x = 2;
 	double y = add(x, 5 + 3);
-	int z = sub(x, 5 + 3);
+
+	{
+		int x = 3;
+		int z = sub(x, 5 + 3);
+	}
+
 	return x;
 }
 
