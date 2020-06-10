@@ -327,6 +327,7 @@ void TypeCheckVisitor::visitEDiv(EDiv *p) {
   else{
     resultExpType = Context::TYPE_DOUBLE;
   }
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEPlus(EPlus *p) {
@@ -437,7 +438,7 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
   }
   
   resultExpType = Context::TYPE_BOOL;
-  
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
