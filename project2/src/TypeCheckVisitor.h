@@ -10,6 +10,7 @@ class TypeCheckVisitor : public BasicVisitor
 private:
   const BasicType *resultExpType;
   const BasicType *returnType;
+  bool isResultExpVariable;
 
 public:
   // Takes ownership of the context.
