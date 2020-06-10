@@ -227,7 +227,7 @@ void TypeCheckVisitor::visitEProj(EProj *p) {
 void TypeCheckVisitor::visitEPIncr(EPIncr *p) {
   p->exp_->accept(this);
   if (resultExpType != Context::TYPE_INT && resultExpType != Context::TYPE_DOUBLE) {
-    TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
+    throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
 } 
 
