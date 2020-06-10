@@ -58,6 +58,9 @@ void TypeCheckVisitor::visitSDecls(SDecls *p) {
   p->type_->accept(this);
   const BasicType *declType = currentContext->findBasicType(currentTypeId);
 
+  if( declType == Context::TYPE_VOID){
+    throw TypeMismatch("non-void Type", Context::TYPE_VOID->id, "variables can not be of type void");
+  }
   if (declType == nullptr) {
     throw UnknownType(currentTypeId);
     return;

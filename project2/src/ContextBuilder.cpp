@@ -25,6 +25,10 @@ void ContextBuilder::visitDFun(DFun *p) {
 
     adecl->type_->accept(this);
     const BasicType *argType = currentContext->findBasicType(currentTypeId);
+    if( argType == Context::TYPE_VOID){
+      handleError(TypeMismatch("non-void Type", Context::TYPE_VOID->id, "function arguments can not be of type void"));
+      continue;
+    }
     if (argType == nullptr) {
       handleError(UnknownType(currentTypeId, "function argument"));
       continue;
