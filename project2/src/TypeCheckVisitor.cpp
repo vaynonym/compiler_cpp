@@ -307,6 +307,8 @@ void TypeCheckVisitor::visitETimes(ETimes *p) {
   if(resultExpType->isConvertibleTo(firstType)) {
     resultExpType = firstType;
   }
+
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEDiv(EDiv *p) {
@@ -427,6 +429,7 @@ void TypeCheckVisitor::visitELtEq(ELtEq *p) {
   }
   
   resultExpType = Context::TYPE_BOOL;
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
