@@ -369,6 +369,7 @@ void TypeCheckVisitor::visitEMinus(EMinus *p) {
   bool anyDouble = first == Context::TYPE_DOUBLE || second == Context::TYPE_DOUBLE;
 
   resultExpType = anyDouble ? Context::TYPE_DOUBLE : Context::TYPE_INT;
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitETwc(ETwc *p) {
@@ -414,6 +415,7 @@ void TypeCheckVisitor::visitEGt(EGt *p) {
   }
 
   resultExpType = Context::TYPE_BOOL;
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
