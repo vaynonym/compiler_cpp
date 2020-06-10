@@ -348,6 +348,7 @@ void TypeCheckVisitor::visitEPlus(EPlus *p) {
   if(resultExpType != firstresultExpType){
     resultExpType = Context::TYPE_DOUBLE;
   }
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEMinus(EMinus *p) {
@@ -396,6 +397,7 @@ void TypeCheckVisitor::visitELt(ELt *p) {
   }
 
   resultExpType = Context::TYPE_BOOL;
+  isResultExpVariable = false;
 }
 
 void TypeCheckVisitor::visitEGt(EGt *p) {
