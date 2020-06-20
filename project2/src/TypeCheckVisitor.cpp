@@ -158,21 +158,29 @@ void TypeCheckVisitor::visitIdInit(IdInit *p){
 void TypeCheckVisitor::visitETrue(ETrue *p) {
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEFalse(EFalse *p) {
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEInt(EInt *p) {
   resultExpType = Context::TYPE_INT;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEDouble(EDouble *p) {
   resultExpType = Context::TYPE_DOUBLE;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEId(EId *p) {
@@ -183,6 +191,8 @@ void TypeCheckVisitor::visitEId(EId *p) {
 
   resultExpType = type;
   isResultExpVariable = true;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEApp(EApp *p) {
@@ -220,6 +230,8 @@ void TypeCheckVisitor::visitEApp(EApp *p) {
 
   resultExpType = function->returnType;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEProj(EProj *p) {
@@ -230,6 +242,8 @@ void TypeCheckVisitor::visitEProj(EProj *p) {
 
   resultExpType = memberType;
   isResultExpVariable = true;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEPIncr(EPIncr *p) {
@@ -241,6 +255,8 @@ void TypeCheckVisitor::visitEPIncr(EPIncr *p) {
     throw TypeMismatch("variable","non-variable"); 
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 } 
 
 void TypeCheckVisitor::visitEPDecr(EPDecr *p) {
@@ -252,6 +268,8 @@ void TypeCheckVisitor::visitEPDecr(EPDecr *p) {
     throw TypeMismatch("variable","non-variable"); 
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEIncr(EIncr *p) {
@@ -263,6 +281,8 @@ void TypeCheckVisitor::visitEIncr(EIncr *p) {
     throw TypeMismatch("variable","non-variable"); 
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEDecr(EDecr *p) {
@@ -274,6 +294,8 @@ void TypeCheckVisitor::visitEDecr(EDecr *p) {
     throw TypeMismatch("variable","non-variable"); 
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEUPlus(EUPlus *p) {
@@ -282,6 +304,8 @@ void TypeCheckVisitor::visitEUPlus(EUPlus *p) {
     throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEUMinus(EUMinus *p) {
@@ -290,6 +314,8 @@ void TypeCheckVisitor::visitEUMinus(EUMinus *p) {
     throw TypeMismatch(Context::TYPE_INT->id + " or " + Context::TYPE_DOUBLE->id, resultExpType->id);
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitETimes(ETimes *p) {
@@ -309,6 +335,8 @@ void TypeCheckVisitor::visitETimes(ETimes *p) {
   }
 
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEDiv(EDiv *p) {
@@ -330,6 +358,8 @@ void TypeCheckVisitor::visitEDiv(EDiv *p) {
     resultExpType = Context::TYPE_DOUBLE;
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEPlus(EPlus *p) {
@@ -351,6 +381,8 @@ void TypeCheckVisitor::visitEPlus(EPlus *p) {
     resultExpType = Context::TYPE_DOUBLE;
   }
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEMinus(EMinus *p) {
@@ -370,6 +402,8 @@ void TypeCheckVisitor::visitEMinus(EMinus *p) {
 
   resultExpType = anyDouble ? Context::TYPE_DOUBLE : Context::TYPE_INT;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitETwc(ETwc *p) {
@@ -385,6 +419,8 @@ void TypeCheckVisitor::visitETwc(ETwc *p) {
 
   resultExpType = Context::TYPE_INT;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitELt(ELt *p) {
@@ -401,6 +437,8 @@ void TypeCheckVisitor::visitELt(ELt *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEGt(EGt *p) {
@@ -416,6 +454,8 @@ void TypeCheckVisitor::visitEGt(EGt *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitELtEq(ELtEq *p) {
@@ -432,6 +472,8 @@ void TypeCheckVisitor::visitELtEq(ELtEq *p) {
   
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
@@ -446,6 +488,8 @@ void TypeCheckVisitor::visitEGtEq(EGtEq *p) {
   
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEEq(EEq *p) {
@@ -454,6 +498,8 @@ void TypeCheckVisitor::visitEEq(EEq *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitENEq(ENEq *p) {
@@ -462,6 +508,8 @@ void TypeCheckVisitor::visitENEq(ENEq *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEAnd(EAnd *p) {
@@ -477,6 +525,8 @@ void TypeCheckVisitor::visitEAnd(EAnd *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEOr(EOr *p) {
@@ -492,6 +542,8 @@ void TypeCheckVisitor::visitEOr(EOr *p) {
 
   resultExpType = Context::TYPE_BOOL;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitEAss(EAss *p) {
@@ -509,6 +561,8 @@ void TypeCheckVisitor::visitEAss(EAss *p) {
   // sets resultExpType back to type of left hand side
   resultExpType = firstresultExpType;
   isResultExpVariable = false;
+
+  p->type = resultExpType;
 }
 
 void TypeCheckVisitor::visitECond(ECond *p) {
@@ -526,4 +580,6 @@ void TypeCheckVisitor::visitECond(ECond *p) {
     throw TypeMismatch(firstresultExpType->id, resultExpType->id, "second and third operand");
   }
   isResultExpVariable = false;
+  
+  p->type = resultExpType;
 }

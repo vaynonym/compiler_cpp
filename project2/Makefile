@@ -1,9 +1,10 @@
-CXXFLAGS := -g -D_GLIBCXX_DEBUG
+CXXFLAGS := -g -D_GLIBCXX_DEBUG $(shell llvm-config-9 --cxxflags | sed 's/-fno-exceptions//')
+LDFLAGS := $(shell llvm-config-9 --ldflags --libs)
 
 SRC := $(wildcard src/*.cpp)
 OBJS := $(SRC:%.cpp=bin/%.o)
 
-GEN_SRC := gen/Absyn.C gen/lex.yy.C gen/Printer.C gen/y.tab.C
+GEN_SRC := gen/lex.yy.C gen/Printer.C gen/y.tab.C
 GEN_OBJ := $(GEN_SRC:%.C=bin/%.o)
 
 all: dirs gen bin/compiler
@@ -17,10 +18,10 @@ bin/src/%.o: src/%.cpp
 
 bin/gen/%.o: gen/%.C
 	@mkdir -p $(@D)
-	clang++-9 $(CXXFLAGS) -c -Igen/ $< -o $@
+	clang++-9 $(CXXFLAGS) -c -Isrc/ -Igen/ $< -o $@
 
 bin/compiler: $(GEN_OBJ) $(OBJS)
-	clang++-9 $(CXXFLAGS) -o bin/compiler $^
+	clang++-9 $(CXXFLAGS) $(LDFLAGS) -o bin/compiler $^
 
 gen: src/CPP.cf
 	bnfc -cpp -o gen/ src/CPP.cf
@@ -31,6 +32,7 @@ gen: src/CPP.cf
 	mv gen/y.tab.c gen/y.tab.tmp
 	mv gen/lex.yy.tmp gen/lex.yy.C
 	mv gen/y.tab.tmp gen/y.tab.C
+	rm gen/Absyn.C gen/Absyn.H
 
 clean:
 	rm -rf bin/
