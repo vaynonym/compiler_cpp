@@ -39,5 +39,7 @@ class Context {
     bool addFunction(const std::string& id, const FunctionType *type);
     const FunctionType* findFunction(const std::string& id);
 
+    const std::vector<const BasicType *> getKnownTypes() const;
+
     Context* createChildContext();
 };

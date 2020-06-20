@@ -10,9 +10,7 @@ TypeCheckVisitor::TypeCheckVisitor(Context *context) {
   isResultExpVariable = false;
 }
 
-TypeCheckVisitor::~TypeCheckVisitor() {
-  delete currentContext;
-}
+TypeCheckVisitor::~TypeCheckVisitor() {}
 
 void TypeCheckVisitor::visitPDefs(PDefs *p) {
   for (auto def : *p->listdef_) {
@@ -580,6 +578,6 @@ void TypeCheckVisitor::visitECond(ECond *p) {
     throw TypeMismatch(firstresultExpType->id, resultExpType->id, "second and third operand");
   }
   isResultExpVariable = false;
-  
+
   p->type = resultExpType;
 }

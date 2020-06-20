@@ -96,6 +96,10 @@ const FunctionType *Context::findFunctionInThis(const std::string& id) {
   return (*res).second;
 }
 
+const std::vector<const BasicType *> Context::getKnownTypes() const {
+  return types;
+}
+
 Context* Context::createChildContext() {
   Context *child = new Context();
   child->parent = this;

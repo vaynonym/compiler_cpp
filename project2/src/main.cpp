@@ -2,8 +2,9 @@
 #include <iostream>
 #include "Parser.H"
 #include "Absyn.H"
-#include "TypeCheckVisitor.h"
 #include "ContextBuilder.h"
+#include "TypeCheckVisitor.h"
+#include "CodeGenVisitor.h"
 
 void typecheck(Program *pgm) {
 	ContextBuilder contextBuilder;
@@ -13,14 +14,20 @@ void typecheck(Program *pgm) {
 		exit(1);
 	}
 
-	TypeCheckVisitor typeChecker(contextBuilder.getGlobalContext());
+	Context *globalContext = contextBuilder.getGlobalContext();
+
+	TypeCheckVisitor typeChecker(globalContext);
 	pgm->accept(&typeChecker);
 
 	if (typeChecker.anyErrors) {
 		exit(1);
 	}
 
-	std::cout << "OK" << std::endl;
+	CodeGenVisitor codeGen(globalContext);
+	pgm->accept(&codeGen);
+
+	codeGen.printIR();
+
 	exit(0);
 }
 
