@@ -12,6 +12,7 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/APInt.h"
+#include "llvm/IR/DerivedTypes.h"
 #include "llvm/Support/raw_os_ostream.h"
 
 #include "BasicVisitor.h"
@@ -20,6 +21,10 @@
 // If changing any of those, also modify CodeGenVisitor::createTypeObjects
 #define INTEGER_WIDTH 64
 #define BOOLEAN_WIDTH 1
+
+#define TO_INT_VALUE(x) (llvm::APInt(INTEGER_WIDTH, x, true))
+#define TO_DOUBLE_VALUE(x) (llvm::APFloat(x))
+#define TO_BOOL_VALUE(x) (llvm::APInt(BOOLEAN_WIDTH, x ? 1 : 0, false))
 
 class CodeGenVisitor : public BasicVisitor {
   private:
@@ -55,4 +60,8 @@ class CodeGenVisitor : public BasicVisitor {
     virtual void visitEId(EId *p);
 
     virtual void visitEEq(EEq *p);
+
+    llvm::Value *genEqComparison(const BasicType *firstType, llvm::Value *firstVal, const BasicType *secondType, llvm::Value *secondVal);
+
+    llvm::Value *genStructAccess(llvm::Value *structVal, int memberIndex);
 };

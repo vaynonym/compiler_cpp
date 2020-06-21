@@ -32,7 +32,6 @@ void CodeGenVisitor::createTypeObjects() {
   const std::vector<const BasicType *> knownTypes = currentContext->getKnownTypes();
   for (const BasicType *type : knownTypes) {
     llvm::Type *llvmType;
-
     if (type == Context::TYPE_INT) {
       llvmType = llvm::Type::getInt64Ty(llvmContext);
     }
@@ -46,8 +45,18 @@ void CodeGenVisitor::createTypeObjects() {
       llvmType = llvm::Type::getVoidTy(llvmContext);
     }
     else {
-      // TODO: Structs oh no 😱
-      continue;
+      const StructType *sType = (const StructType *) type;
+      auto members = sType->getMemberTypes();
+
+      std::vector<llvm::Type *> memberTypes;
+      for (auto type : members) {
+        memberTypes.push_back(typeMap[type]);
+      }
+
+      llvm::StructType *llvmSType = llvm::StructType::get(llvmContext, memberTypes);
+      llvmSType->setName(sType->id);
+
+      llvmType = llvmSType;
     }
 
     typeMap.emplace(type, llvmType);
@@ -96,10 +105,10 @@ void CodeGenVisitor::visitDFun(DFun *p) {
     codeGenContext->addSymbol(arg.getName(), &arg);
   }
 
+  // Codegen statements for function body
+
   llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvmContext, "entry", llvmF);
   builder.SetInsertPoint(bb);
-
-  // Codegen statements for function body
 
   for (auto stm : *p->liststm_) {
     stm->accept(this);
@@ -119,19 +128,19 @@ void CodeGenVisitor::visitSReturn(SReturn *p) {
 }
 
 void CodeGenVisitor::visitEInt(EInt *p) {
-  expValue = llvm::ConstantInt::get(llvmContext, llvm::APInt(INTEGER_WIDTH, p->integer_, true));
+  expValue = llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(p->integer_));
 }
 
 void CodeGenVisitor::visitEDouble(EDouble *p) {
-  expValue = llvm::ConstantFP::get(llvmContext, llvm::APFloat(p->double_));
+  expValue = llvm::ConstantFP::get(llvmContext, TO_DOUBLE_VALUE(p->double_));
 }
 
 void CodeGenVisitor::visitETrue(ETrue *p) {
-  expValue = llvm::ConstantInt::get(llvmContext, llvm::APInt(BOOLEAN_WIDTH, 1, false));
+  expValue = llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(true));
 }
 
 void CodeGenVisitor::visitEFalse(EFalse *p) {
-  expValue = llvm::ConstantInt::get(llvmContext, llvm::APInt(BOOLEAN_WIDTH, 0, false));
+  expValue = llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(false));
 }
 
 void CodeGenVisitor::visitEId(EId *p) {
@@ -145,44 +154,67 @@ void CodeGenVisitor::visitEEq(EEq *p) {
   p->exp_2->accept(this);
   llvm::Value *secondVal = expValue;
 
-  if (p->exp_1->type == p->exp_2->type) {
-    const BasicType *t = p->exp_1->type;
+  expValue = genEqComparison(p->exp_1->type, firstVal, p->exp_2->type, secondVal);
+}
 
-    if (t == Context::TYPE_INT) {
-      expValue = builder.CreateICmpEQ(firstVal, secondVal);
+llvm::Value *CodeGenVisitor::genEqComparison(const BasicType *firstType, llvm::Value *firstVal,
+  const BasicType *secondType, llvm::Value *secondVal
+) {
+  if (firstType == secondType) {
+    if (firstType == Context::TYPE_INT) {
+      return builder.CreateICmpEQ(firstVal, secondVal);
     }
-    else if (t == Context::TYPE_DOUBLE) {
-      expValue = builder.CreateFCmpUEQ(firstVal, secondVal);
+    else if (firstType == Context::TYPE_DOUBLE) {
+      return builder.CreateFCmpUEQ(firstVal, secondVal);
     }
-    else if (t == Context::TYPE_BOOL) {
-      expValue = builder.CreateICmpEQ(firstVal, secondVal);
+    else if (firstType == Context::TYPE_BOOL){
+      return builder.CreateICmpEQ(firstVal, secondVal);
     }
-    else if (t == Context::TYPE_VOID) {
-      // type error, unreachable
+    else if (firstType == Context::TYPE_VOID) {
+      /* unreachable, type error */ return nullptr;
     }
     else {
-      // TODO: Structs oh no 😱
-      return;
-    }
-  } else {
-    const BasicType *t1 = p->exp_1->type;
-    const BasicType *t2 = p->exp_1->type;
+        llvm::StructType *llvmSType = (llvm::StructType *) firstVal->getType();
+        unsigned int numElements = llvmSType->getNumElements();
 
-    if (t1 == Context::TYPE_INT && t2 == Context::TYPE_DOUBLE) {
+        const StructType *sType = (const StructType *) currentContext->findBasicType(llvmSType->getName());
+        auto structMembers = sType->getMemberTypes();
+
+        llvm::Value *overallResult = llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(true));
+
+        for (unsigned int i = 0; i < numElements; i++) {
+          const BasicType *memberType = structMembers[i];
+
+          llvm::Value *memberInFirst = genStructAccess(firstVal, i);
+          llvm::Value *memberInSecond = genStructAccess(secondVal, i);
+
+          llvm::Value *compResult = genEqComparison(memberType, memberInFirst, memberType, memberInSecond);
+
+          overallResult = builder.CreateAnd(overallResult, compResult);
+        }
+
+        return overallResult;
+      }
+  } else {
+    if (firstType == Context::TYPE_INT && secondType == Context::TYPE_DOUBLE) {
       // convert value 1 to double and compare
-      expValue = builder.CreateFCmpUEQ(
+      return builder.CreateFCmpUEQ(
         builder.CreateSIToFP(firstVal, typeMap[Context::TYPE_DOUBLE]),
         secondVal);
     }
-    else if(t1 == Context::TYPE_DOUBLE && t2 == Context::TYPE_INT) {
+    else if(firstType == Context::TYPE_DOUBLE && secondType == Context::TYPE_INT) {
       // convert value 2 to double and compare
-      expValue = builder.CreateFCmpUEQ(
+      return builder.CreateFCmpUEQ(
         firstVal,
         builder.CreateSIToFP(secondVal, typeMap[Context::TYPE_DOUBLE]));
     }
     else {
       // always false
-      expValue = llvm::ConstantInt::get(llvmContext, llvm::APInt(BOOLEAN_WIDTH, 0, false));
+      return llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(false));
     }
   }
+}
+
+llvm::Value *CodeGenVisitor::genStructAccess(llvm::Value *structVal, int memberIndex) {
+  return builder.CreateExtractValue(structVal, memberIndex);
 }

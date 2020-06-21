@@ -20,6 +20,7 @@ class StructType : public BasicType {
     StructType(const std::string id, const std::map<const std::string, const BasicType *> members);
 
     virtual const BasicType * getMember(const std::string& id) const;
+    const std::vector<const BasicType *> getMemberTypes() const;
 };
 
 class FunctionType {
