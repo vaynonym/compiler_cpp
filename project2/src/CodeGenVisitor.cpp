@@ -1,9 +1,9 @@
 #include "CodeGenVisitor.h"
 
-CodeGenVisitor::CodeGenVisitor(Context *context) : llvmContext(), builder(llvmContext) {
+CodeGenVisitor::CodeGenVisitor(const char *moduleName, Context *context) : llvmContext(), builder(llvmContext) {
   currentContext = context;
 
-  module = llvm::make_unique<llvm::Module>("CPP", llvmContext);
+  module = llvm::make_unique<llvm::Module>(moduleName, llvmContext);
 
   createTypeObjects();
 
@@ -121,6 +121,27 @@ void CodeGenVisitor::visitDFun(DFun *p) {
   llvm::verifyFunction(*llvmF, &llvm::outs());
 }
 
+void CodeGenVisitor::visitSDecls(SDecls *p) {
+  p->type_->accept(this);
+  const BasicType *declType = currentContext->findBasicType(currentTypeId);
+
+  llvm::Type *type = typeMap[declType];
+
+  for (auto idOrInit : *p->listidin_){
+    IdInit *init = dynamic_cast<IdInit *>(idOrInit);
+    IdNoInit *noInit = dynamic_cast<IdNoInit *>(idOrInit);
+
+    std::string id = init != nullptr ? init->id_ : noInit->id_;
+
+    if (init != nullptr) {
+      init->exp_->accept(this);
+      codeGenContext->addSymbol(id, expValue);
+    } else {
+      codeGenContext->addSymbol(id, nullptr);
+    }
+  }
+}
+
 void CodeGenVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
 
@@ -145,6 +166,21 @@ void CodeGenVisitor::visitEFalse(EFalse *p) {
 
 void CodeGenVisitor::visitEId(EId *p) {
   expValue = codeGenContext->findSymbol(p->id_);
+  if (expValue == nullptr) {
+    throw "Oh no! Variable used before initializing it 😱";
+  }
+}
+
+void CodeGenVisitor::visitEApp(EApp *p) {
+  llvm::Function *func = module->getFunction(p->id_);
+  
+  std::vector<llvm::Value *> arguments;
+  for (auto arg : *p->listexp_) {
+    arg->accept(this);
+    arguments.push_back(expValue);
+  }
+
+  expValue = builder.CreateCall(func, arguments);
 }
 
 void CodeGenVisitor::visitEEq(EEq *p) {

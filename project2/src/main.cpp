@@ -6,7 +6,7 @@
 #include "TypeCheckVisitor.h"
 #include "CodeGenVisitor.h"
 
-void typecheck(Program *pgm) {
+void compile(const char *filename, Program *pgm) {
 	ContextBuilder contextBuilder;
 	pgm->accept(&contextBuilder);
 
@@ -23,7 +23,7 @@ void typecheck(Program *pgm) {
 		exit(1);
 	}
 
-	CodeGenVisitor codeGen(globalContext);
+	CodeGenVisitor codeGen(filename, globalContext);
 	pgm->accept(&codeGen);
 
 	codeGen.printIR();
@@ -31,10 +31,10 @@ void typecheck(Program *pgm) {
 	exit(0);
 }
 
-void process(FILE* input) {
+void process(const char *filename, FILE* input) {
 	Program *parse_tree = pProgram(input);
 	if (parse_tree) {
-		typecheck(parse_tree);
+		compile(filename, parse_tree);
 	} else {
 		printf("SYNTAX ERROR\n");
 		exit(1);
@@ -43,12 +43,14 @@ void process(FILE* input) {
 
 int main(int argc, char ** argv) {
 	FILE *input;
-	char *filename = NULL;
+	const char *filename;
 
 	if (argc > 1)
 		filename = argv[1];
-	else
+	else {
 		input = stdin;
+		filename = "stdin";
+	}
 
 	if (filename) {
 		input = fopen(filename, "r");
@@ -58,6 +60,7 @@ int main(int argc, char ** argv) {
 		}
 	} else
 		input = stdin;
-	process(input);
+
+	process(filename, input);
 }
 

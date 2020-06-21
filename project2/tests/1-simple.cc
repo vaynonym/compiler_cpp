@@ -1,8 +1,10 @@
-bool test(int a, int b) {
+bool test(bool a, bool b) {
     return a == b;
 }
 
 int main() {
-    test(3, 8);
+    bool b = test(true, false);
+    bool x = b == false;
+
     return 0;
 }

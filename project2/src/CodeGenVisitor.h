@@ -43,7 +43,7 @@ class CodeGenVisitor : public BasicVisitor {
 
     void createTypeObjects();
   public:
-    CodeGenVisitor(Context *context);
+    CodeGenVisitor(const char *moduleName, Context *context);
     ~CodeGenVisitor();
 
     void printIR();
@@ -51,6 +51,7 @@ class CodeGenVisitor : public BasicVisitor {
     virtual void visitPDefs(PDefs *p);
     virtual void visitDFun(DFun *p);
 
+    virtual void visitSDecls(SDecls *p);
     virtual void visitSReturn(SReturn *p);
 
     virtual void visitEInt(EInt *p);
@@ -58,6 +59,7 @@ class CodeGenVisitor : public BasicVisitor {
     virtual void visitETrue(ETrue *p);
     virtual void visitEFalse(EFalse *p);
     virtual void visitEId(EId *p);
+    virtual void visitEApp(EApp *p);
 
     virtual void visitEEq(EEq *p);
 
