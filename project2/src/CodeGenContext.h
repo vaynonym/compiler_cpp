@@ -18,6 +18,7 @@ class CodeGenContext {
     ~CodeGenContext();
 
     bool addSymbol(const std::string& id, llvm::Value *value);
+    void setSymbol(const std::string& id, llvm::Value *value);
     llvm::Value* findSymbol(const std::string& id);
 
     CodeGenContext* createChildContext();

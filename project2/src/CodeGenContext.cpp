@@ -9,6 +9,10 @@ bool CodeGenContext::addSymbol(const std::string& id, llvm::Value *value) {
   return true;
 }
 
+void CodeGenContext::setSymbol(const std::string& id, llvm::Value *value) {
+  knownSymbols[id] = value;
+}
+
 llvm::Value *CodeGenContext::findSymbol(const std::string& id) {
   auto res = knownSymbols.find(id);
 

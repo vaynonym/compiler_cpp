@@ -24,6 +24,16 @@ const BasicType * StructType::getMember(const std::string& id) const {
   return (*res).second;
 }
 
+const std::vector<std::string> StructType::getMemberNames() const {
+  std::vector<std::string> names;
+
+  for (auto pair : members) {
+    names.push_back(pair.first);
+  }
+
+  return names;
+}
+
 const std::vector<const BasicType *> StructType::getMemberTypes() const {
   std::vector<const BasicType *> types;
 

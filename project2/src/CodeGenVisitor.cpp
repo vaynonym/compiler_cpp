@@ -99,6 +99,7 @@ void CodeGenVisitor::visitDFun(DFun *p) {
   // Function body
 
   beginCodeGenContext();
+  currentFunction = ft;
 
   // Insert arguments into new child context
   for (auto& arg : llvmF->args()) {
@@ -114,11 +115,17 @@ void CodeGenVisitor::visitDFun(DFun *p) {
     stm->accept(this);
   }
 
-  // TODO: Returns for void functions
+  if (ft->returnType == Context::TYPE_VOID) {
+    builder.CreateRetVoid();
+  }
 
   endCodeGenContext();
 
   llvm::verifyFunction(*llvmF, &llvm::outs());
+}
+
+void CodeGenVisitor::visitSExp(SExp *p) {
+  p->accept(this);
 }
 
 void CodeGenVisitor::visitSDecls(SDecls *p) {
@@ -145,7 +152,41 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
 void CodeGenVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
 
+  if (currentFunction->returnType == Context::TYPE_DOUBLE && p->exp_->type == Context::TYPE_INT) {
+    expValue = builder.CreateSIToFP(expValue, typeMap[Context::TYPE_DOUBLE]);
+  }
+
   builder.CreateRet(expValue);
+}
+
+void CodeGenVisitor::visitSReturnV(SReturnV *p) {
+  builder.CreateRetVoid();
+}
+
+void CodeGenVisitor::visitSWhile(SWhile *p) {
+
+}
+
+void CodeGenVisitor::visitSDoWhile(SDoWhile *p) {
+
+}
+
+void CodeGenVisitor::visitSFor(SFor *p) {
+
+}
+
+void CodeGenVisitor::visitSBlock(SBlock *p) {
+  beginCodeGenContext();
+
+  for (auto stm : *p->liststm_) {
+    stm->accept(this);
+  }
+
+  endCodeGenContext();
+}
+
+void CodeGenVisitor::visitSIfElse(SIfElse *p) {
+
 }
 
 void CodeGenVisitor::visitEInt(EInt *p) {
@@ -173,14 +214,179 @@ void CodeGenVisitor::visitEId(EId *p) {
 
 void CodeGenVisitor::visitEApp(EApp *p) {
   llvm::Function *func = module->getFunction(p->id_);
+
+  const FunctionType *ft = currentContext->findFunction(func->getName());
   
   std::vector<llvm::Value *> arguments;
+  int i = 0;
   for (auto arg : *p->listexp_) {
     arg->accept(this);
+
+    if (ft->parameters[i] == Context::TYPE_DOUBLE && arg->type == Context::TYPE_INT) {
+      expValue = builder.CreateSIToFP(expValue, typeMap[Context::TYPE_DOUBLE]);
+    }
+
     arguments.push_back(expValue);
+    i++;
   }
 
   expValue = builder.CreateCall(func, arguments);
+}
+
+void CodeGenVisitor::visitEProj(EProj *p) {
+  p->exp_->accept(this);
+
+  llvm::StructType *llvmSType = (llvm::StructType *) expValue->getType();
+
+  expValue = genStructAccess(expValue, getMemberIndex(llvmSType, p->id_));
+}
+
+void CodeGenVisitor::visitEPIncr(EPIncr *p) {
+  p->exp_->accept(this);
+
+  llvm::Value *changedVal;
+  if (p->type == Context::TYPE_INT) {
+    changedVal = builder.CreateAdd(expValue, llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+  }
+  else if (p->type == Context::TYPE_DOUBLE) {
+    changedVal = builder.CreateFAdd(expValue, llvm::ConstantFP::get(llvmContext, TO_DOUBLE_VALUE(1.0)));
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+
+  genAssignment(p->exp_, changedVal);
+  // expValue remains the original value of p->exp_, from before the increment.
+}
+
+void CodeGenVisitor::visitEPDecr(EPDecr *p) {
+  p->exp_->accept(this);
+
+  llvm::Value *changedVal;
+  if (p->type == Context::TYPE_INT) {
+    changedVal = builder.CreateSub(expValue, llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+  }
+  else if (p->type == Context::TYPE_DOUBLE) {
+    changedVal = builder.CreateFSub(expValue, llvm::ConstantFP::get(llvmContext, TO_DOUBLE_VALUE(1.0)));
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+
+  genAssignment(p->exp_, changedVal);
+  // expValue remains the original value of p->exp_, from before the decrement.
+}
+
+void CodeGenVisitor::visitEIncr(EIncr *p) {
+  p->exp_->accept(this);
+
+  llvm::Value *changedVal;
+  if (p->type == Context::TYPE_INT) {
+    changedVal = builder.CreateAdd(expValue, llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+  }
+  else if (p->type == Context::TYPE_DOUBLE) {
+    changedVal = builder.CreateFAdd(expValue, llvm::ConstantFP::get(llvmContext, TO_DOUBLE_VALUE(1.0)));
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+
+  expValue = genAssignment(p->exp_, changedVal);
+}
+
+void CodeGenVisitor::visitEDecr(EDecr *p) {
+  p->exp_->accept(this);
+
+  llvm::Value *changedVal;
+  if (p->type == Context::TYPE_INT) {
+    changedVal = builder.CreateSub(expValue, llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+  }
+  else if (p->type == Context::TYPE_DOUBLE) {
+    changedVal = builder.CreateFSub(expValue, llvm::ConstantFP::get(llvmContext, TO_DOUBLE_VALUE(1.0)));
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+
+  expValue = genAssignment(p->exp_, changedVal);
+}
+
+void CodeGenVisitor::visitEUPlus(EUPlus *p) {
+  // Unary plus does not change the value of the expression.
+  p->exp_->accept(this);
+}
+
+void CodeGenVisitor::visitEUMinus(EUMinus *p) {
+  p->exp_->accept(this);
+
+  if (p->type == Context::TYPE_INT) {
+    expValue = builder.CreateNeg(expValue);
+  }
+  else if (p->type == Context::TYPE_DOUBLE) {
+    expValue = builder.CreateFNeg(expValue);
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+}
+
+void CodeGenVisitor::visitETimes(ETimes *p) {
+
+}
+
+void CodeGenVisitor::visitEDiv(EDiv *p) {
+
+}
+
+void CodeGenVisitor::visitEPlus(EPlus *p) {
+
+}
+
+void CodeGenVisitor::visitEMinus(EMinus *p) {
+
+}
+
+void CodeGenVisitor::visitETwc(ETwc *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+
+  const BasicType *firstType = p->exp_1->type;
+  const BasicType *secondType = p->exp_2->type;
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstVal, secondType, &secondVal, &resultType);
+  
+  llvm::Value *lt, *gt;
+
+  if (resultType == Context::TYPE_INT) {
+    lt = builder.CreateICmpSLT(firstVal, secondVal);
+    gt = builder.CreateICmpSGT(firstVal, secondVal);
+  }
+  else {
+    lt = builder.CreateFCmpULT(firstVal, secondVal);
+    gt = builder.CreateFCmpUGT(firstVal, secondVal);
+  }
+
+  expValue = builder.CreateSub(gt, lt);
+}
+
+void CodeGenVisitor::visitELt(ELt *p) {
+
+}
+
+void CodeGenVisitor::visitEGt(EGt *p) {
+
+}
+
+void CodeGenVisitor::visitELtEq(ELtEq *p) {
+
+}
+
+void CodeGenVisitor::visitEGtEq(EGtEq *p) {
+
 }
 
 void CodeGenVisitor::visitEEq(EEq *p) {
@@ -193,21 +399,87 @@ void CodeGenVisitor::visitEEq(EEq *p) {
   expValue = genEqComparison(p->exp_1->type, firstVal, p->exp_2->type, secondVal);
 }
 
+void CodeGenVisitor::visitENEq(ENEq *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+
+  llvm::Value *eqValue = genEqComparison(p->exp_1->type, firstVal, p->exp_2->type, secondVal);
+  expValue = builder.CreateXor(eqValue, 1);
+}
+
+void CodeGenVisitor::visitEAnd(EAnd *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+
+  expValue = builder.CreateAnd(firstVal, secondVal);
+}
+
+void CodeGenVisitor::visitEOr(EOr *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+
+  expValue = builder.CreateOr(firstVal, secondVal);
+}
+
+void CodeGenVisitor::visitEAss(EAss *p) {
+  p->exp_2->accept(this);
+  expValue = genAssignment(p->exp_1, expValue);
+}
+
+void CodeGenVisitor::visitECond(ECond *p) {
+  p->exp_1->accept(this);
+
+  llvm::BasicBlock *trueBlock = llvm::BasicBlock::Create(llvmContext);
+  llvm::BasicBlock *falseBlock = llvm::BasicBlock::Create(llvmContext);
+  llvm::BasicBlock *nextBlock = llvm::BasicBlock::Create(llvmContext);
+
+  llvm::Value *condValue = expValue;
+  builder.CreateCondBr(condValue, trueBlock, falseBlock);
+
+  builder.SetInsertPoint(trueBlock);
+  p->exp_2->accept(this);
+  llvm::Value *trueBlockResult = expValue;
+  builder.CreateBr(nextBlock);
+
+  builder.SetInsertPoint(falseBlock);
+  p->exp_2->accept(this);
+  llvm::Value *falseBlockResult = expValue;
+  builder.CreateBr(nextBlock);
+
+  builder.SetInsertPoint(nextBlock);
+  expValue = builder.CreateSelect(condValue, trueBlockResult, falseBlockResult);
+}
+
 llvm::Value *CodeGenVisitor::genEqComparison(const BasicType *firstType, llvm::Value *firstVal,
   const BasicType *secondType, llvm::Value *secondVal
 ) {
-  if (firstType == secondType) {
-    if (firstType == Context::TYPE_INT) {
+  const BasicType *commonType;
+  if (handleNumberConversions(firstType, &firstVal, secondType, &secondVal, &commonType)) {
+    if (commonType == Context::TYPE_INT) {
       return builder.CreateICmpEQ(firstVal, secondVal);
     }
-    else if (firstType == Context::TYPE_DOUBLE) {
+    else if (commonType == Context::TYPE_DOUBLE) {
       return builder.CreateFCmpUEQ(firstVal, secondVal);
     }
-    else if (firstType == Context::TYPE_BOOL){
+    else {
+      UNREACHABLE_OH_NO
+    }
+  }
+  else if (firstType == secondType) {
+    if (firstType == Context::TYPE_BOOL){
       return builder.CreateICmpEQ(firstVal, secondVal);
     }
     else if (firstType == Context::TYPE_VOID) {
-      /* unreachable, type error */ return nullptr;
+      UNREACHABLE_OH_NO
     }
     else {
         llvm::StructType *llvmSType = (llvm::StructType *) firstVal->getType();
@@ -231,26 +503,115 @@ llvm::Value *CodeGenVisitor::genEqComparison(const BasicType *firstType, llvm::V
 
         return overallResult;
       }
-  } else {
-    if (firstType == Context::TYPE_INT && secondType == Context::TYPE_DOUBLE) {
-      // convert value 1 to double and compare
-      return builder.CreateFCmpUEQ(
-        builder.CreateSIToFP(firstVal, typeMap[Context::TYPE_DOUBLE]),
-        secondVal);
-    }
-    else if(firstType == Context::TYPE_DOUBLE && secondType == Context::TYPE_INT) {
-      // convert value 2 to double and compare
-      return builder.CreateFCmpUEQ(
-        firstVal,
-        builder.CreateSIToFP(secondVal, typeMap[Context::TYPE_DOUBLE]));
-    }
-    else {
-      // always false
-      return llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(false));
-    }
+  }
+  else {
+    // always false
+    return llvm::ConstantInt::get(llvmContext, TO_BOOL_VALUE(false));
   }
 }
 
 llvm::Value *CodeGenVisitor::genStructAccess(llvm::Value *structVal, int memberIndex) {
   return builder.CreateExtractValue(structVal, memberIndex);
+}
+
+llvm::Value *CodeGenVisitor::genAssignment(Exp *e1, llvm::Value *assignedValue) {
+  EId *eId = dynamic_cast<EId *>(e1);
+  EProj *eProj = dynamic_cast<EProj *>(e1);
+
+  if (e1->type == Context::TYPE_DOUBLE && assignedValue->getType() == typeMap[Context::TYPE_INT]) {
+    assignedValue = builder.CreateSIToFP(assignedValue, typeMap[Context::TYPE_DOUBLE]);
+  }
+
+  if (eId != nullptr) {
+    codeGenContext->setSymbol(eId->id_, assignedValue);
+    return assignedValue;
+  }
+  else if (eProj != nullptr) {
+    // bla.foo = x;
+    // => insertValue bla, x, idxof(foo)
+
+    // (bla.foo).bar = x;
+    // => insertValue bla, x, idxof(foo), idxof(bar)
+
+    std::vector<std::string> ids;
+
+    EProj *currentProj = eProj;
+    while (true) {
+      ids.push_back(currentProj->id_);
+
+      EId *eCurrentId = dynamic_cast<EId *>(currentProj->exp_);
+      if (eCurrentId != nullptr) {
+        ids.push_back(eCurrentId->id_);
+        break;
+      }
+
+      currentProj = dynamic_cast<EProj *>(currentProj->exp_);
+    }
+
+    llvm::Value *rootValue = codeGenContext->findSymbol(ids[ids.size() - 1]);
+
+    llvm::StructType *currentLLVMSType = (llvm::StructType *) rootValue->getType();
+
+    std::vector<unsigned int> indices;
+    for (int i = ids.size() - 2; i >= 0; i--) {
+      int memberIndex = getMemberIndex(currentLLVMSType, ids[i]);
+      
+      indices.push_back(memberIndex);
+      currentLLVMSType = llvm::dyn_cast<llvm::StructType>(currentLLVMSType->getElementType(memberIndex));
+    }
+
+    return builder.CreateInsertValue(rootValue, assignedValue, indices);
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
+}
+
+int CodeGenVisitor::getMemberIndex(llvm::StructType *llvmSType, std::string& memberName) {
+  const StructType *sType = (const StructType *) currentContext->findBasicType(llvmSType->getName());
+
+  std::vector<std::string> names = sType->getMemberNames();
+  for (int i = 0; i < names.size(); i++) {
+    if (names[i] == memberName) {
+      return i;
+    }
+  }
+
+  UNREACHABLE_OH_NO
+}
+
+// Takes two arbitrary values and their types.
+// If both types are number types, converts them both to the same type, writes that type to resultType and returns true.
+// If either type is not a number, does not perform any conversion, writes nullptr to resultType and returns false.
+bool CodeGenVisitor::handleNumberConversions(const BasicType *firstType, llvm::Value **firstVal,
+  const BasicType *secondType, llvm::Value **secondVal,
+  const BasicType **resultType
+) {
+  if (firstType == secondType) {
+    if (firstType == Context::TYPE_INT) {
+      *resultType = Context::TYPE_INT;
+      return true;
+    }
+    if (firstType == Context::TYPE_DOUBLE) {
+      *resultType = Context::TYPE_DOUBLE;
+      return true;
+    }
+
+    *resultType = nullptr;
+    return false;
+  }
+
+  if (firstType == Context::TYPE_INT && secondType == Context::TYPE_DOUBLE) {
+    *firstVal = builder.CreateSIToFP(*firstVal, typeMap[Context::TYPE_DOUBLE]);
+    *resultType = Context::TYPE_DOUBLE;
+    return true;
+  }
+  if (firstType == Context::TYPE_DOUBLE && secondType == Context::TYPE_INT) {
+    *secondVal = builder.CreateSIToFP(*secondVal, typeMap[Context::TYPE_DOUBLE]);
+    *resultType = Context::TYPE_DOUBLE;
+    return true;
+  }
+
+  *resultType = nullptr;
+  return false;
 }
