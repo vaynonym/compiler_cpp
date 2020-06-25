@@ -191,6 +191,30 @@ void CodeGenVisitor::visitSDoWhile(SDoWhile *p) {
 
 void CodeGenVisitor::visitSFor(SFor *p) {
 
+	p->exp_1->accept(this);
+
+  llvm::Value *startVal = expValue; 
+
+
+	llvm::Function *currentFunction =	builder.GetInsertBlock()->getParent();
+
+	llvm::BasicBlock *loopConditionBlock = llvm::BasicBlock::Create(llvmContext, "loopCondition", currentFunction);
+	llvm::BasicBlock *loopBlock = llvm::BasicBlock::Create(llvmContext, "loopBlock", currentFunction);
+	llvm::BasicBlock *mergeBlock = llvm::BasicBlock::Create(llvmContext, "mergeBlock", currentFunction);
+	
+  builder.CreateBr(loopConditionBlock);
+	
+	builder.SetInsertPoint(loopConditionBlock);
+  p->exp_2->accept(this);
+	builder.CreateCondBr(expValue, loopBlock, mergeBlock);
+
+	builder.SetInsertPoint(loopBlock);
+	p->stm_->accept(this);
+	p->exp_3->accept(this);
+	builder.CreateBr(loopConditionBlock);
+
+	builder.SetInsertPoint(mergeBlock);
+
 }
 
 void CodeGenVisitor::visitSBlock(SBlock *p) {
@@ -351,7 +375,27 @@ void CodeGenVisitor::visitEUMinus(EUMinus *p) {
 }
 
 void CodeGenVisitor::visitETimes(ETimes *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstValue = expValue;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondValue = expValue;
+
+  const BasicType *firstType = p->exp_1->type;
+  const BasicType *secondType = p->exp_2->type;
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstValue, secondType, &secondValue, &resultType);
+
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateMul(firstValue, secondValue);
+  }
+  else if(resultType == Context::TYPE_DOUBLE){
+    expValue = builder.CreateFMul(firstValue, secondValue);
+  }
+  else{
+    UNREACHABLE_OH_NO
+  }
 }
 
 void CodeGenVisitor::visitEDiv(EDiv *p) {
@@ -447,8 +491,30 @@ void CodeGenVisitor::visitEGt(EGt *p) {
 }
 
 void CodeGenVisitor::visitELtEq(ELtEq *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstValue = expValue;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondValue = expValue;
+
+  const BasicType *firstType = p->exp_1->type;
+  const BasicType *secondType = p->exp_2->type;
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstValue, secondType, &secondValue, &resultType);
+
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateICmpSLE(firstValue, secondValue);
+  }
+  else if(resultType == Context::TYPE_DOUBLE){
+    expValue = builder.CreateFCmpULE(firstValue, secondValue);
+  }
+  else{
+    UNREACHABLE_OH_NO
+  }
 }
+  
+
 
 void CodeGenVisitor::visitEGtEq(EGtEq *p) {
 
