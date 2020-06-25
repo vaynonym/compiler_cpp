@@ -168,7 +168,21 @@ void CodeGenVisitor::visitSReturnV(SReturnV *p) {
 }
 
 void CodeGenVisitor::visitSWhile(SWhile *p) {
+  llvm::BasicBlock *condCheckBlock = MAKE_BASIC_BLOCK("while-cond");
+  llvm::BasicBlock *bodyBlock = MAKE_BASIC_BLOCK("while-body");
+  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("while-merge");
 
+  builder.CreateBr(condCheckBlock);
+
+  builder.SetInsertPoint(condCheckBlock);
+  p->exp_->accept(this);
+  builder.CreateCondBr(expValue, bodyBlock, nextBlock);
+
+  builder.SetInsertPoint(bodyBlock);
+  p->stm_->accept(this);
+  builder.CreateBr(condCheckBlock);
+
+  builder.SetInsertPoint(nextBlock);
 }
 
 void CodeGenVisitor::visitSDoWhile(SDoWhile *p) {
@@ -349,7 +363,27 @@ void CodeGenVisitor::visitEPlus(EPlus *p) {
 }
 
 void CodeGenVisitor::visitEMinus(EMinus *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+  const BasicType *firstType = p->exp_1->type;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+  const BasicType *secondType = p->exp_2->type;
+
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstVal, secondType, &secondVal, &resultType);
+
+  if (resultType == Context::TYPE_INT) {
+    expValue = builder.CreateSub(firstVal, secondVal);
+  }
+  else if (resultType == Context::TYPE_DOUBLE) {
+    expValue = builder.CreateFSub(firstVal, secondVal);
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
 }
 
 void CodeGenVisitor::visitETwc(ETwc *p) {
@@ -389,7 +423,27 @@ void CodeGenVisitor::visitELt(ELt *p) {
 }
 
 void CodeGenVisitor::visitEGt(EGt *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstVal = expValue;
+  const BasicType *firstType = p->exp_1->type;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondVal = expValue;
+  const BasicType *secondType = p->exp_2->type;
+
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstVal, secondType, &secondVal, &resultType);
+
+  if (resultType == Context::TYPE_INT) {
+    expValue = builder.CreateICmpSGT(firstVal, secondVal);
+  }
+  else if (resultType == Context::TYPE_DOUBLE) {
+    expValue = builder.CreateFCmpUGT(firstVal, secondVal);
+  }
+  else {
+    UNREACHABLE_OH_NO
+  }
 }
 
 void CodeGenVisitor::visitELtEq(ELtEq *p) {
