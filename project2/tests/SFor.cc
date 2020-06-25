@@ -5,7 +5,7 @@ int loop(int a, int b){
         b++;
     }
 
-    return a + b;
+    return a * b;
 }
 
 int main() {

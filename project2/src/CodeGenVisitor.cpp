@@ -454,8 +454,8 @@ void CodeGenVisitor::visitETwc(ETwc *p) {
     gt = builder.CreateFCmpUGT(firstVal, secondVal);
   }
 
-  // Extend lt and gt to i32, they are i1 and we need a (possibly negative)
-  // i32 return.
+  // Extend lt and gt to i64, they are i1 and we need a (possibly negative)
+  // i64 return.
   lt = builder.CreateSExt(lt, typeMap[Context::TYPE_INT]);
   gt = builder.CreateSExt(gt, typeMap[Context::TYPE_INT]);
 
