@@ -22,6 +22,8 @@
 #define INTEGER_WIDTH 64
 #define BOOLEAN_WIDTH 1
 
+
+#define MAKE_BASIC_BLOCK(name) (llvm::BasicBlock::Create(llvmContext, name, builder.GetInsertBlock()->getParent()))
 #define TO_INT_VALUE(x) (llvm::APInt(INTEGER_WIDTH, x, true))
 #define TO_DOUBLE_VALUE(x) (llvm::APFloat(x))
 #define TO_BOOL_VALUE(x) (llvm::APInt(BOOLEAN_WIDTH, x ? 1 : 0, false))

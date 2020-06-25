@@ -101,15 +101,17 @@ void CodeGenVisitor::visitDFun(DFun *p) {
   beginCodeGenContext();
   currentFunction = ft;
 
-  // Insert arguments into new child context
-  for (auto& arg : llvmF->args()) {
-    codeGenContext->addSymbol(arg.getName(), &arg);
-  }
-
   // Codegen statements for function body
 
   llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvmContext, "entry", llvmF);
   builder.SetInsertPoint(bb);
+
+  // Insert arguments into new child context
+  for (auto& arg : llvmF->args()) {
+    llvm::Value *ptr = builder.CreateAlloca(arg.getType(), llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+    builder.CreateStore(&arg, ptr);
+    codeGenContext->addSymbol(arg.getName(), ptr);
+  }
 
   for (auto stm : *p->liststm_) {
     stm->accept(this);
@@ -125,7 +127,7 @@ void CodeGenVisitor::visitDFun(DFun *p) {
 }
 
 void CodeGenVisitor::visitSExp(SExp *p) {
-  p->accept(this);
+  p->exp_->accept(this);
 }
 
 void CodeGenVisitor::visitSDecls(SDecls *p) {
@@ -140,11 +142,13 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
 
     std::string id = init != nullptr ? init->id_ : noInit->id_;
 
+    llvm::Value *ptr = builder.CreateAlloca(type, llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+    codeGenContext->addSymbol(id, ptr);
+
     if (init != nullptr) {
       init->exp_->accept(this);
-      codeGenContext->addSymbol(id, expValue);
-    } else {
-      codeGenContext->addSymbol(id, nullptr);
+      
+      builder.CreateStore(expValue, codeGenContext->findSymbol(id));
     }
   }
 }
@@ -206,10 +210,12 @@ void CodeGenVisitor::visitEFalse(EFalse *p) {
 }
 
 void CodeGenVisitor::visitEId(EId *p) {
-  expValue = codeGenContext->findSymbol(p->id_);
-  if (expValue == nullptr) {
+  llvm::Value *ptr = codeGenContext->findSymbol(p->id_);
+  if (ptr == nullptr) {
     throw "Oh no! Variable used before initializing it 😱";
   }
+
+  expValue = builder.CreateLoad(ptr);
 }
 
 void CodeGenVisitor::visitEApp(EApp *p) {
@@ -370,6 +376,11 @@ void CodeGenVisitor::visitETwc(ETwc *p) {
     gt = builder.CreateFCmpUGT(firstVal, secondVal);
   }
 
+  // Extend lt and gt to i32, they are i1 and we need a (possibly negative)
+  // i32 return.
+  lt = builder.CreateSExt(lt, typeMap[Context::TYPE_INT]);
+  gt = builder.CreateSExt(gt, typeMap[Context::TYPE_INT]);
+
   expValue = builder.CreateSub(gt, lt);
 }
 
@@ -438,9 +449,9 @@ void CodeGenVisitor::visitEAss(EAss *p) {
 void CodeGenVisitor::visitECond(ECond *p) {
   p->exp_1->accept(this);
 
-  llvm::BasicBlock *trueBlock = llvm::BasicBlock::Create(llvmContext);
-  llvm::BasicBlock *falseBlock = llvm::BasicBlock::Create(llvmContext);
-  llvm::BasicBlock *nextBlock = llvm::BasicBlock::Create(llvmContext);
+  llvm::BasicBlock *trueBlock = MAKE_BASIC_BLOCK("cond-true");
+  llvm::BasicBlock *falseBlock = MAKE_BASIC_BLOCK("cond-false");
+  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("cond-merge");
 
   llvm::Value *condValue = expValue;
   builder.CreateCondBr(condValue, trueBlock, falseBlock);
@@ -451,7 +462,7 @@ void CodeGenVisitor::visitECond(ECond *p) {
   builder.CreateBr(nextBlock);
 
   builder.SetInsertPoint(falseBlock);
-  p->exp_2->accept(this);
+  p->exp_3->accept(this);
   llvm::Value *falseBlockResult = expValue;
   builder.CreateBr(nextBlock);
 
@@ -523,7 +534,7 @@ llvm::Value *CodeGenVisitor::genAssignment(Exp *e1, llvm::Value *assignedValue) 
   }
 
   if (eId != nullptr) {
-    codeGenContext->setSymbol(eId->id_, assignedValue);
+    builder.CreateStore(assignedValue, codeGenContext->findSymbol(eId->id_));
     return assignedValue;
   }
   else if (eProj != nullptr) {
