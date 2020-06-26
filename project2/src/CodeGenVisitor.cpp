@@ -187,6 +187,30 @@ void CodeGenVisitor::visitSWhile(SWhile *p) {
 
 void CodeGenVisitor::visitSDoWhile(SDoWhile *p) {
 
+  llvm::Value *conditionexpValue;
+  llvm::Function *currentFunction =	builder.GetInsertBlock()->getParent();
+  llvm::BasicBlock *whileBlock = llvm::BasicBlock::Create(llvmContext, "whileBlock", currentFunction);
+  llvm::BasicBlock *afterwhileBlock = llvm::BasicBlock::Create(llvmContext, "afterwhileBlock", currentFunction);
+  llvm::BasicBlock *condBlock = llvm::BasicBlock::Create(llvmContext, "condBlock", currentFunction);
+
+  builder.CreateBr(whileBlock);
+
+  builder.SetInsertPoint(whileBlock);
+  
+  p->stm_->accept(this);
+
+  builder.CreateBr(condBlock);
+
+  builder.SetInsertPoint(condBlock);
+
+  p->exp_->accept(this);
+
+  conditionexpValue = expValue;
+  
+  builder.CreateCondBr(conditionexpValue, whileBlock, afterwhileBlock);
+
+  builder.SetInsertPoint(afterwhileBlock);
+
 }
 
 void CodeGenVisitor::visitSFor(SFor *p) {
@@ -403,7 +427,26 @@ void CodeGenVisitor::visitEDiv(EDiv *p) {
 }
 
 void CodeGenVisitor::visitEPlus(EPlus *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstexpValue = expValue;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondexpValue = expValue;
+
+  const BasicType *firstexpType = p->exp_1->type;
+  const BasicType *secondexpType = p->exp_2->type;
+  const BasicType *resultType;
+  handleNumberConversions(firstexpType, &firstexpValue, secondexpType, &secondexpValue, &resultType);
+  
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateAdd(firstexpValue, secondexpValue);
+  }else{
+    if(resultType == Context::TYPE_DOUBLE){
+    expValue = builder.CreateFAdd(firstexpValue,secondexpValue);
+    }else{
+      UNREACHABLE_OH_NO
+    }
+  }
 }
 
 void CodeGenVisitor::visitEMinus(EMinus *p) {
@@ -463,7 +506,26 @@ void CodeGenVisitor::visitETwc(ETwc *p) {
 }
 
 void CodeGenVisitor::visitELt(ELt *p) {
+  p->exp_1->accept(this);
+  llvm::Value *firstexpValue = expValue;
 
+  p->exp_2->accept(this);
+  llvm::Value *secondexpValue = expValue;
+
+  const BasicType *firstexpType = p->exp_1->type;
+  const BasicType *secondexpType = p->exp_2->type;
+  const BasicType *resultType;
+  handleNumberConversions(firstexpType, &firstexpValue, secondexpType, &secondexpValue, &resultType);
+  
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateICmpSLT(firstexpValue, secondexpValue);
+  }else{
+    if(resultType == Context::TYPE_DOUBLE){
+      expValue = builder.CreateFCmpULT(firstexpValue,secondexpValue);
+    }else{
+      UNREACHABLE_OH_NO
+    }
+  }
 }
 
 void CodeGenVisitor::visitEGt(EGt *p) {
