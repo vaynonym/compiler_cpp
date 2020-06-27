@@ -98,6 +98,10 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
 
     if (init != nullptr) {
       init->exp_->accept(this);
+
+      if (declType == Context::TYPE_DOUBLE && expValue->getType() == typeMap[Context::TYPE_INT]) {
+        expValue = builder.CreateSIToFP(expValue, typeMap[Context::TYPE_DOUBLE]);
+      }
       
       builder.CreateStore(expValue, codeGenContext->findSymbol(id));
     }
