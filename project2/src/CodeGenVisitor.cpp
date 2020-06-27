@@ -253,7 +253,6 @@ void CodeGenVisitor::visitSBlock(SBlock *p) {
 
 void CodeGenVisitor::visitSIfElse(SIfElse *p) {
 
-  llvm::Function *currentFunction =	builder.GetInsertBlock()->getParent();
   llvm::BasicBlock *ifBlock = MAKE_BASIC_BLOCK("ifBlock");
   llvm::BasicBlock *thenBlock = MAKE_BASIC_BLOCK("thenBlock");
   llvm::BasicBlock *elseBlock = MAKE_BASIC_BLOCK("elseBlock");
@@ -266,10 +265,10 @@ void CodeGenVisitor::visitSIfElse(SIfElse *p) {
 
   builder.SetInsertPoint(thenBlock);
   p->stm_1->accept(this);
-  builder.createBr(nextBlock);
+  builder.CreateBr(nextBlock);
   builder.SetInsertPoint(elseBlock);
   p->stm_2->accept(this);
-  builder.createBr(nextBlock);
+  builder.CreateBr(nextBlock);
   builder.SetInsertPoint(nextBlock);
   
 }
