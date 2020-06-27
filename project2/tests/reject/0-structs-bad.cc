@@ -9,4 +9,5 @@ int main() {
   p.y = 1;
 
   double sqrMag = p.x * p.x + p.y * p.y;
+  int z = p.x;
 }

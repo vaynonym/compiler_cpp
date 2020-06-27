@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+
+
+echo "Using compiler at bin/compiler"
+COMPILER="bin/compiler"
+
+FILES=$@
+if [[ $# -eq 0 ]]; then
+  FILES=`ls tests/`
+fi
+
+for testCase in $FILES
+do
+  if [ "$testCase" != "reject" ]; then
+    echo "======== TEST CASE $testCase ========"
+    $COMPILER "tests/$testCase"
+  fi
+done
+
+if [[ $# -eq 0 ]]; then
+  REJ_FILES=`ls tests/reject/`
+  for testCase in $REJ_FILES
+  do
+    echo "======== REJECT TEST CASE $testCase ========"
+    set +e
+    $COMPILER "tests/reject/$testCase"
+    retCode=$?
+    set -e
+
+    if [[ $retCode -eq 0 ]]; then
+      echo "Reject test case passed!"
+      exit 1
+    fi
+  done
+fi
+
+echo ""
+echo "All tests passed successfully!"

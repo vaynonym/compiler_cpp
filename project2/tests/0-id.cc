@@ -4,5 +4,5 @@ int main() {
   int compare = x <=> y;
 
   bool compResult = compare <= 0;
-  int z = 3.0 <=> compResult;
+  int z = 3.0 <=> 4.0;
 }
