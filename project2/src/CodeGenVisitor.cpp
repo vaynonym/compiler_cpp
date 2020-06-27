@@ -265,11 +265,15 @@ void CodeGenVisitor::visitSIfElse(SIfElse *p) {
 
   builder.SetInsertPoint(thenBlock);
   p->stm_1->accept(this);
-  builder.CreateBr(nextBlock);
+  if (thenBlock->getTerminator() == nullptr) {
+    builder.CreateBr(nextBlock);
+  }
+
   builder.SetInsertPoint(elseBlock);
   p->stm_2->accept(this);
-  builder.CreateBr(nextBlock);
-  builder.SetInsertPoint(nextBlock);
+  if (elseBlock->getTerminator() == nullptr) {
+    builder.CreateBr(nextBlock);
+  }
   
 }
 
