@@ -229,7 +229,7 @@ void CodeGenVisitor::visitSIfElse(SIfElse *p) {
   if (elseBlock->getTerminator() == nullptr) {
     builder.CreateBr(nextBlock);
   }
-  
+  builder.SetInsertPoint(nextBlock);  
 }
 
 void CodeGenVisitor::visitEInt(EInt *p) {
