@@ -6,4 +6,5 @@ int main () {
     
     bool y = 7 == true;
     bool z = 5.0 == false;
+    return 0;
 }

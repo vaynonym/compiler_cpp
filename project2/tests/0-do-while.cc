@@ -3,4 +3,6 @@ int main(){
     do{
         b = 4;
     }while(false);
+
+    return 0;
 }

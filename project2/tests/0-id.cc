@@ -5,4 +5,5 @@ int main() {
 
   bool compResult = compare <= 0;
   int z = 3.0 <=> 4.0;
+  return 0;
 }

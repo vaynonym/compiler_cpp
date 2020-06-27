@@ -5,4 +5,5 @@ int main(){
     int y;
     x = y;
     double d = 3.4;
+    return 0;
 }

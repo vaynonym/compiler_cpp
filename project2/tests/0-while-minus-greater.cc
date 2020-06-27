@@ -4,4 +4,5 @@ int main() {
     x = x + 1 - 1;
     x++;
   }
+  return 0;
 }
