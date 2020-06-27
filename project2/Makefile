@@ -34,6 +34,15 @@ gen: src/CPP.cf
 	mv gen/y.tab.tmp gen/y.tab.C
 	rm gen/Absyn.C gen/Absyn.H
 
+domjudge: bin/compiler
+	mkdir -p domjudge
+	cp src/* domjudge/
+	cp gen/* domjudge/
+	rm domjudge/CPP.cf
+	rm domjudge/*.l
+	rm domjudge/*.y
+
 clean:
 	rm -rf bin/
 	rm -rf gen/
+	rm -rf domjudge/
