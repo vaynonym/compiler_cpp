@@ -1,11 +1,10 @@
 #include "CodeGenVisitor.h"
+#include "LLVMContextBuilder.h"
 
 CodeGenVisitor::CodeGenVisitor(const char *moduleName, Context *context) : llvmContext(), builder(llvmContext) {
   currentContext = context;
 
   module = llvm::make_unique<llvm::Module>(moduleName, llvmContext);
-
-  createTypeObjects();
 
   codeGenContext = new CodeGenContext();
 }
@@ -24,49 +23,21 @@ void CodeGenVisitor::endCodeGenContext() {
   delete oldContext;
 }
 
-void CodeGenVisitor::createTypeObjects() {
-  // Go through all types in context:
-  //   Create llvm::TYpe object for it
-  //   Insert into Type->llvm:Type map
-
-  const std::vector<const BasicType *> knownTypes = currentContext->getKnownTypes();
-  for (const BasicType *type : knownTypes) {
-    llvm::Type *llvmType;
-    if (type == Context::TYPE_INT) {
-      llvmType = llvm::Type::getInt64Ty(llvmContext);
-    }
-    else if (type == Context::TYPE_DOUBLE) {
-      llvmType = llvm::Type::getDoubleTy(llvmContext);
-    }
-    else if (type == Context::TYPE_BOOL) {
-      llvmType = llvm::Type::getInt1Ty(llvmContext);
-    }
-    else if (type == Context::TYPE_VOID) {
-      llvmType = llvm::Type::getVoidTy(llvmContext);
-    }
-    else {
-      const StructType *sType = (const StructType *) type;
-      auto members = sType->getMemberTypes();
-
-      std::vector<llvm::Type *> memberTypes;
-      for (auto type : members) {
-        memberTypes.push_back(typeMap[type]);
-      }
-
-      llvm::StructType *llvmSType = llvm::StructType::create(llvmContext, memberTypes, sType->id);
-
-      llvmType = llvmSType;
-    }
-
-    typeMap.emplace(type, llvmType);
-  }
-}
-
 void CodeGenVisitor::printIR() {
   module->print(llvm::outs(), nullptr);
 }
 
 void CodeGenVisitor::visitPDefs(PDefs *p) {
+  // We need to do two passes over the AST in order to support calling functions and using structs that are defined later
+  // in the code.
+  // The LLVMContextBuilder visits only struct and function definitions.
+  // It creates the typeMap, mapping our own `Type *`s to LLVM types and also creates llvm::Function objects that are
+  // inserted into the LLVM module.
+  // This means that this visitor can then access types using the generated typeMap and call functions by getting the
+  // correct llvm::Function object from the LLVM module.
+  LLVMContextBuilder llvmContextBuilder(currentContext, &llvmContext, &builder, &typeMap, module.get());
+  p->accept(&llvmContextBuilder);
+
   for (auto def : *p->listdef_) {
     def->accept(this);
   }
@@ -74,26 +45,7 @@ void CodeGenVisitor::visitPDefs(PDefs *p) {
 
 void CodeGenVisitor::visitDFun(DFun *p) {
   const FunctionType *ft = currentContext->findFunction(p->id_);
-
-  // Map the typechecker's BasicType objects to corresponding llvm::Type objects
-  std::vector<llvm::Type *> arguments;
-  for (const BasicType *argType : ft->parameters) {
-    arguments.push_back(typeMap[argType]);
-  }
-
-  llvm::Type *returnType = typeMap[ft->returnType];
-
-  // Create LLVM FunctionType
-  llvm::FunctionType *llvmFt = llvm::FunctionType::get(returnType, arguments, false);
-
-  // Create LLVM Function
-  llvm::Function *llvmF = llvm::Function::Create(llvmFt, llvm::Function::ExternalLinkage, p->id_, module.get());
-
-  // Set argument names
-  int i = 0;
-  for (auto& arg : llvmF->args()) {
-    arg.setName(((ADecl *) (*p->listarg_)[i++])->id_);
-  }
+  llvm::Function *llvmF = module->getFunction(p->id_);
 
   // Function body
 

@@ -45,8 +45,6 @@ class CodeGenVisitor : public BasicVisitor {
 
     void beginCodeGenContext();
     void endCodeGenContext();
-
-    void createTypeObjects();
   public:
     CodeGenVisitor(const char *moduleName, Context *context);
     ~CodeGenVisitor();
