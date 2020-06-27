@@ -278,7 +278,6 @@ void CodeGenVisitor::visitEProj(EProj *p) {
   p->exp_->accept(this);
 
   llvm::StructType *llvmSType = (llvm::StructType *) expValue->getType();
-
   expValue = genStructAccess(expValue, getMemberIndex(llvmSType, p->id_));
 }
 
@@ -756,19 +755,23 @@ llvm::Value *CodeGenVisitor::genAssignment(Exp *e1, llvm::Value *assignedValue) 
       currentProj = dynamic_cast<EProj *>(currentProj->exp_);
     }
 
-    llvm::Value *rootValue = codeGenContext->findSymbol(ids[ids.size() - 1]);
+    llvm::Value *rootPtr = codeGenContext->findSymbol(ids[ids.size() - 1]);
+    llvm::Value *rootValue = builder.CreateLoad(rootPtr);
 
-    llvm::StructType *currentLLVMSType = (llvm::StructType *) rootValue->getType();
+    llvm::StructType *currentMemberType = (llvm::StructType *) rootValue->getType();
 
     std::vector<unsigned int> indices;
     for (int i = ids.size() - 2; i >= 0; i--) {
-      int memberIndex = getMemberIndex(currentLLVMSType, ids[i]);
+      int memberIndex = getMemberIndex(currentMemberType, ids[i]);
       
       indices.push_back(memberIndex);
-      currentLLVMSType = llvm::dyn_cast<llvm::StructType>(currentLLVMSType->getElementType(memberIndex));
+      //currentLLVMSType = llvm::dyn_cast<llvm::StructType>(currentLLVMSType->getElementType(memberIndex));
+      currentMemberType = llvm::dyn_cast<llvm::StructType>(currentMemberType->getElementType(memberIndex));
     }
 
-    return builder.CreateInsertValue(rootValue, assignedValue, indices);
+    llvm::Value *newStructVal = builder.CreateInsertValue(rootValue, assignedValue, indices);
+    builder.CreateStore(newStructVal, rootPtr);
+    return assignedValue;
   }
   else {
     UNREACHABLE_OH_NO
