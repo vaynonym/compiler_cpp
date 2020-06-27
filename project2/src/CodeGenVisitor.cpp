@@ -253,6 +253,24 @@ void CodeGenVisitor::visitSBlock(SBlock *p) {
 
 void CodeGenVisitor::visitSIfElse(SIfElse *p) {
 
+  llvm::Value *conditionexpValue;
+  llvm::Function *currentFunction =	builder.GetInsertBlock()->getParent();
+  llvm::BasicBlock *ifBlock = llvm::BasicBlock::Create(llvmContext, "ifBlock", currentFunction);
+  llvm::BasicBlock *thenBlock = llvm::BasicBlock::Create(llvmContext, "thenBlock", currentFunction);
+  llvm::BasicBlock *elseBlock = llvm::BasicBlock::Create(llvmContext, "elseBlock", currentFunction);
+  llvm::BasicBlock *nextBlock = llvm::BasicBlock::Create(llvmContext, "nextBlock", currentFunction);
+  
+  builder.CreateBr(ifBlock);
+  builder.SetInsertPoint(ifBlock);
+  p->exp_->accept(this);
+  builder.CreateCondBr(conditionexpValue, ifBlock, elseBlock);
+
+  builder.SetInsertPoint(thenBlock);
+  p->stm_1->accept(this);
+
+  builder.SetInsertPoint(elseBlock);
+  p->stm_2->accept(this);
+  builder.SetInsertPoint(nextBlock);
 }
 
 void CodeGenVisitor::visitEInt(EInt *p) {
@@ -424,6 +442,28 @@ void CodeGenVisitor::visitETimes(ETimes *p) {
 
 void CodeGenVisitor::visitEDiv(EDiv *p) {
 
+  p->exp_1->accept(this);
+  llvm::Value *firstexpValue = expValue;
+
+  p->exp_2->accept(this);
+  llvm::Value *secondexpValue = expValue;
+
+  const BasicType *firstexpType = p->exp_1->type;
+  const BasicType *secondexpType = p->exp_2->type;
+  const BasicType *resultType;
+  handleNumberConversions(firstexpType, &firstexpValue, secondexpType, &secondexpValue, &resultType);
+  
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateDiv(firstexpValue, secondexpValue);
+  }
+  else {
+    if(resultType == Context::TYPE_DOUBLE){
+    expValue = builder.CreateDiv(firstexpValue,secondexpValue);
+    }
+    else{
+      UNREACHABLE_OH_NO
+    }
+  }
 }
 
 void CodeGenVisitor::visitEPlus(EPlus *p) {
@@ -580,6 +620,26 @@ void CodeGenVisitor::visitELtEq(ELtEq *p) {
 
 void CodeGenVisitor::visitEGtEq(EGtEq *p) {
 
+  p->exp_1->accept(this);
+  llvm::Value *firstValue = expValue;
+  p->exp_2->accept(this);
+  llvm::Value *secondValue = expValue;
+
+  const BasicType *firstType = p->exp_1->type;
+  const BasicType *secondType = p->exp_2->type;
+  const BasicType *resultType;
+
+  handleNumberConversions(firstType, &firstValue, secondType, &secondValue, &resultType);
+
+  if(resultType == Context::TYPE_INT){
+    expValue = builder.CreateICmpSGE(firstValue, secondValue);
+  }
+  else if(resultType == Context::TYPE_DOUBLE){
+    expValue = builder.CreateFCmpUGE(firstValue, secondValue);
+  }
+  else{
+    UNREACHABLE_OH_NO
+  }
 }
 
 void CodeGenVisitor::visitEEq(EEq *p) {
