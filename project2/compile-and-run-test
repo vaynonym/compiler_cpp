@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+
+echo "Using compiler at bin/compiler"
+COMPILER="bin/compiler"
+
+FILES=$@
+if [[ $# -eq 0 ]]; then
+  FILES=`ls tests/`
+fi
+
+for testCase in $FILES
+do
+  if [ "$testCase" != "reject" ]; then
+    echo "======== TEST CASE $testCase ========"
+    $COMPILER "tests/$testCase" | llvm-as-9 | llc-9 -filetype=obj > test.o
+    clang++-9 test.o -o testexecutable
+    set +e
+    ./testexecutable
+    retCode=$?
+    set -e
+
+    echo "Test $testCase outputted $retCode"
+  fi
+done
+
+rm test.o
+rm testexecutable
+
+echo ""
+echo "All tests executed successfully!"
