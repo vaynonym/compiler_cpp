@@ -53,8 +53,7 @@ void CodeGenVisitor::createTypeObjects() {
         memberTypes.push_back(typeMap[type]);
       }
 
-      llvm::StructType *llvmSType = llvm::StructType::get(llvmContext, memberTypes);
-      llvmSType->setName(sType->id);
+      llvm::StructType *llvmSType = llvm::StructType::create(llvmContext, memberTypes, sType->id);
 
       llvmType = llvmSType;
     }
