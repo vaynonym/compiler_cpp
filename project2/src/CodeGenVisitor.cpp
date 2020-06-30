@@ -113,6 +113,10 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
 void CodeGenVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
 
+  if (builder.GetInsertBlock()->getTerminator() != nullptr) {
+    return;
+  }
+
   if (currentFunction->returnType == Context::TYPE_DOUBLE && p->exp_->type == Context::TYPE_INT) {
     expValue = builder.CreateSIToFP(expValue, typeMap[Context::TYPE_DOUBLE]);
   }
@@ -121,6 +125,10 @@ void CodeGenVisitor::visitSReturn(SReturn *p) {
 }
 
 void CodeGenVisitor::visitSReturnV(SReturnV *p) {
+  if (builder.GetInsertBlock()->getTerminator() != nullptr) {
+    return;
+  }
+
   builder.CreateRetVoid();
 }
 
