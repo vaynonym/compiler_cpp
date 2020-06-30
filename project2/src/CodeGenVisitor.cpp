@@ -69,7 +69,9 @@ void CodeGenVisitor::visitDFun(DFun *p) {
   }
 
   if (ft->returnType == Context::TYPE_VOID) {
-    builder.CreateRetVoid();
+    if (builder.GetInsertBlock()->getTerminator() == nullptr) {
+      builder.CreateRetVoid();
+    }
   }
 
   endCodeGenContext();
@@ -501,7 +503,8 @@ void CodeGenVisitor::visitETwc(ETwc *p) {
   lt = builder.CreateSExt(lt, typeMap[Context::TYPE_INT]);
   gt = builder.CreateSExt(gt, typeMap[Context::TYPE_INT]);
 
-  expValue = builder.CreateSub(gt, lt);
+  // TODO: This seems backwards, but it works this way round?
+  expValue = builder.CreateSub(lt, gt);
 }
 
 void CodeGenVisitor::visitELt(ELt *p) {
