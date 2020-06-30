@@ -74,6 +74,10 @@ void CodeGenVisitor::visitDFun(DFun *p) {
     }
   }
 
+  if (builder.GetInsertBlock()->empty()) {
+    builder.GetInsertBlock()->eraseFromParent();
+  }
+
   endCodeGenContext();
 
   llvm::verifyFunction(*llvmF, &llvm::outs());
@@ -113,23 +117,22 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
 void CodeGenVisitor::visitSReturn(SReturn *p) {
   p->exp_->accept(this);
 
-  if (builder.GetInsertBlock()->getTerminator() != nullptr) {
-    return;
-  }
-
   if (currentFunction->returnType == Context::TYPE_DOUBLE && p->exp_->type == Context::TYPE_INT) {
     expValue = builder.CreateSIToFP(expValue, typeMap[Context::TYPE_DOUBLE]);
   }
 
   builder.CreateRet(expValue);
+
+  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("afterReturnBlock");
+  builder.SetInsertPoint(nextBlock);
 }
 
-void CodeGenVisitor::visitSReturnV(SReturnV *p) {
-  if (builder.GetInsertBlock()->getTerminator() != nullptr) {
-    return;
-  }
 
+void CodeGenVisitor::visitSReturnV(SReturnV *p) {
   builder.CreateRetVoid();
+
+  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("afterReturnBlock");
+  builder.SetInsertPoint(nextBlock);
 }
 
 void CodeGenVisitor::visitSWhile(SWhile *p) {
