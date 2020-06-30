@@ -35,6 +35,7 @@ gen: src/CPP.cf
 	rm gen/Absyn.C gen/Absyn.H
 
 domjudge: bin/compiler
+	rm -rf domjudge/
 	mkdir -p domjudge
 	cp src/* domjudge/
 	cp gen/* domjudge/
