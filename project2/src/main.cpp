@@ -45,21 +45,19 @@ int main(int argc, char ** argv) {
 	FILE *input;
 	const char *filename;
 
-	if (argc > 1)
+	if (argc > 1) {
 		filename = argv[1];
-	else {
-		input = stdin;
-		filename = "stdin";
-	}
 
-	if (filename) {
 		input = fopen(filename, "r");
 		if (!input) {
 			printf("Cannot open the input file");
 			exit(1);
 		}
-	} else
+	}
+	else {
 		input = stdin;
+		filename = "stdin";
+	}
 
 	process(filename, input);
 }
