@@ -220,16 +220,17 @@ void CodeGenVisitor::visitSIfElse(SIfElse *p) {
 
   builder.SetInsertPoint(thenBlock);
   p->stm_1->accept(this);
-  if (thenBlock->getTerminator() == nullptr) {
+  if (builder.GetInsertBlock()->getTerminator() == nullptr) {
     builder.CreateBr(nextBlock);
   }
 
   builder.SetInsertPoint(elseBlock);
   p->stm_2->accept(this);
-  if (elseBlock->getTerminator() == nullptr) {
+  if (builder.GetInsertBlock()->getTerminator() == nullptr) {
     builder.CreateBr(nextBlock);
   }
-  builder.SetInsertPoint(nextBlock);  
+
+  builder.SetInsertPoint(nextBlock);
 }
 
 void CodeGenVisitor::visitEInt(EInt *p) {
