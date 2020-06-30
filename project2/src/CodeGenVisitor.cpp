@@ -653,21 +653,42 @@ void CodeGenVisitor::visitECond(ECond *p) {
   llvm::BasicBlock *falseBlock = MAKE_BASIC_BLOCK("cond-false");
   llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("cond-merge");
 
+  const BasicType *resultType;
+  if (p->exp_2->type == p->exp_3->type) {
+    resultType = p->exp_2->type;
+  }
+  else {
+    // Only valid conversion here could be int->double, then double is the result type.
+    resultType = Context::TYPE_DOUBLE;
+  }
+
+  llvm::Value *resultPtr = builder.CreateAlloca(typeMap[resultType], llvm::ConstantInt::get(llvmContext, TO_INT_VALUE(1)));
+
   llvm::Value *condValue = expValue;
   builder.CreateCondBr(condValue, trueBlock, falseBlock);
 
   builder.SetInsertPoint(trueBlock);
   p->exp_2->accept(this);
-  llvm::Value *trueBlockResult = expValue;
+
+  if (p->exp_2->type != resultType) {
+    expValue = builder.CreateSIToFP(expValue, typeMap[resultType]);
+  }
+  builder.CreateStore(expValue, resultPtr);
+
   builder.CreateBr(nextBlock);
 
   builder.SetInsertPoint(falseBlock);
   p->exp_3->accept(this);
-  llvm::Value *falseBlockResult = expValue;
+
+  if (p->exp_3->type != resultType) {
+    expValue = builder.CreateSIToFP(expValue, typeMap[resultType]);
+  }
+  builder.CreateStore(expValue, resultPtr);
+
   builder.CreateBr(nextBlock);
 
   builder.SetInsertPoint(nextBlock);
-  expValue = builder.CreateSelect(condValue, trueBlockResult, falseBlockResult);
+  expValue = builder.CreateLoad(resultPtr);
 }
 
 llvm::Value *CodeGenVisitor::genEqComparison(const BasicType *firstType, llvm::Value *firstVal,
