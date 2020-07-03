@@ -47,7 +47,7 @@ int main() {
     double a = three();
     double b = nine();
 
-    int twc = a <=> b;
+    int twc = 0;//a <=> b;
     int cmp = doubleCmp(a, b);
 
     test();

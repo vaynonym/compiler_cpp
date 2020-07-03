@@ -2,6 +2,7 @@ int loop(int a, int b){
     int x = 4;
     x++;
     for(a = 0; a <= 2; a++){
+        return 1;
         b++;
     }
 

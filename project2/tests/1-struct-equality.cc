@@ -4,8 +4,8 @@ struct Point {
 };
 
 bool equals(Point a, Point b) {
-    return a == b;
-    //return false;
+    //return a == b;
+    return false;
 }
 
 int main() {

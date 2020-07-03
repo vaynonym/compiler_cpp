@@ -11,23 +11,35 @@ if [[ $# -eq 0 ]]; then
   FILES=`ls tests/`
 fi
 
+mkdir -p tmp
+
 for testCase in $FILES
 do
   if [ "$testCase" != "reject" ]; then
     echo "======== TEST CASE $testCase ========"
-    $COMPILER "tests/$testCase" | llvm-as-9 | llc-9 -filetype=obj > test.o
-    clang++-9 test.o -o testexecutable
+    $COMPILER < "tests/$testCase" | llvm-as-9 | llc-9 -filetype=obj > tmp/test-1.o
+    clang++-9 -O0 tmp/test-1.o -o tmp/testexecutable-1
     set +e
-    ./testexecutable
+    ./tmp/testexecutable-1
     retCode=$?
     set -e
 
     echo "Test $testCase outputted $retCode"
+
+    #clang++-9 -O0 -Wno-everything --std=c++2a -o tmp/testexecutable-2 "tests/$testCase"
+    #set +e
+    #./tmp/testexecutable-2
+    #retCode2=$?
+    #set -e
+
+    #echo "Test $testCase using clang outputted $retCode2"
+    #if [ $retCode != $retCode2 ]; then
+    #  echo "Return mismatch!"
+    #fi
   fi
 done
 
-rm test.o
-rm testexecutable
+rm -r tmp
 
 echo ""
 echo "All tests executed successfully!"
