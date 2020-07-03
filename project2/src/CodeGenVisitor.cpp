@@ -192,28 +192,36 @@ void CodeGenVisitor::visitSFor(SFor *p) {
 
 	p->exp_1->accept(this);
 
-  llvm::Value *startVal = expValue; 
+	llvm::Value *startVal = expValue; 
 
 
-	llvm::Function *currentFunction =	builder.GetInsertBlock()->getParent();
+	llvm::Function *currentFunction = builder.GetInsertBlock()->getParent();
 
 	llvm::BasicBlock *loopConditionBlock = llvm::BasicBlock::Create(llvmContext, "loopCondition", currentFunction);
 	llvm::BasicBlock *loopBlock = llvm::BasicBlock::Create(llvmContext, "loopBlock", currentFunction);
 	llvm::BasicBlock *mergeBlock = llvm::BasicBlock::Create(llvmContext, "mergeBlock", currentFunction);
-	
-  builder.CreateBr(loopConditionBlock);
-	
+
+	builder.CreateBr(loopConditionBlock);
 	builder.SetInsertPoint(loopConditionBlock);
-  p->exp_2->accept(this);
+	p->exp_2->accept(this);
 	builder.CreateCondBr(expValue, loopBlock, mergeBlock);
 
 	builder.SetInsertPoint(loopBlock);
 	p->stm_->accept(this);
+
+	if (stmReturns) {
+		builder.SetInsertPoint(mergeBlock);
+
+		stmReturns = false;
+		return;
+	}
+
 	p->exp_3->accept(this);
 	builder.CreateBr(loopConditionBlock);
 
 	builder.SetInsertPoint(mergeBlock);
 
+	stmReturns = false;
 }
 
 void CodeGenVisitor::visitSBlock(SBlock *p) {
