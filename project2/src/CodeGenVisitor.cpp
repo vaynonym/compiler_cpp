@@ -66,17 +66,23 @@ void CodeGenVisitor::visitDFun(DFun *p) {
 
   for (auto stm : *p->liststm_) {
     stm->accept(this);
-  }
-
-  if (ft->returnType == Context::TYPE_VOID) {
-    if (builder.GetInsertBlock()->getTerminator() == nullptr) {
-      builder.CreateRetVoid();
+    if (stmReturns) {
+      break;
     }
   }
 
-  if (builder.GetInsertBlock()->empty()) {
-    builder.GetInsertBlock()->eraseFromParent();
+  if (!stmReturns) {
+    if (ft->returnType == Context::TYPE_VOID) {
+      builder.CreateRetVoid();
+    }
+    else {
+      std::cout << "Function does not returns in all cases and is not void!" << std::endl;
+    }
   }
+
+  /*if (builder.GetInsertBlock()->empty()) {
+    builder.GetInsertBlock()->eraseFromParent();
+  }*/
 
   endCodeGenContext();
 
@@ -85,6 +91,7 @@ void CodeGenVisitor::visitDFun(DFun *p) {
 
 void CodeGenVisitor::visitSExp(SExp *p) {
   p->exp_->accept(this);
+  stmReturns = false;
 }
 
 void CodeGenVisitor::visitSDecls(SDecls *p) {
@@ -112,6 +119,8 @@ void CodeGenVisitor::visitSDecls(SDecls *p) {
       builder.CreateStore(expValue, codeGenContext->findSymbol(id));
     }
   }
+
+  stmReturns = false;
 }
 
 void CodeGenVisitor::visitSReturn(SReturn *p) {
@@ -123,16 +132,14 @@ void CodeGenVisitor::visitSReturn(SReturn *p) {
 
   builder.CreateRet(expValue);
 
-  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("afterReturnBlock");
-  builder.SetInsertPoint(nextBlock);
+  stmReturns = true;
 }
 
 
 void CodeGenVisitor::visitSReturnV(SReturnV *p) {
   builder.CreateRetVoid();
 
-  llvm::BasicBlock *nextBlock = MAKE_BASIC_BLOCK("afterReturnBlock");
-  builder.SetInsertPoint(nextBlock);
+  stmReturns = true;
 }
 
 void CodeGenVisitor::visitSWhile(SWhile *p) {
@@ -212,11 +219,19 @@ void CodeGenVisitor::visitSFor(SFor *p) {
 void CodeGenVisitor::visitSBlock(SBlock *p) {
   beginCodeGenContext();
 
+  bool returns = false;
   for (auto stm : *p->liststm_) {
     stm->accept(this);
+
+    if (stmReturns) {
+      returns = true;
+      break;
+    }
   }
 
   endCodeGenContext();
+
+  stmReturns = returns;
 }
 
 void CodeGenVisitor::visitSIfElse(SIfElse *p) {

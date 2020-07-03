@@ -43,6 +43,8 @@ class CodeGenVisitor : public BasicVisitor {
 
     CodeGenContext *codeGenContext;
 
+    bool stmReturns;
+
     void beginCodeGenContext();
     void endCodeGenContext();
   public:
